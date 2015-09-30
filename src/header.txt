@@ -1,0 +1,11 @@
+// ==UserScript==
+// @name          TagPro Balls 3D
+// @namespace     http://github.com/keratagpro/
+// @description   Draws 3D balls on top of the TagPro canvas using THREE.js.
+// @include       http://tagpro-*.koalabeast.com:*
+// @include       http://*.newcompte.fr:*
+// @author        Kera
+// @version       0.1
+// @require       https://cdnjs.cloudflare.com/ajax/libs/three.js/r72/three.min.js
+// @grant         GM_addStyle
+// ==/UserScript==

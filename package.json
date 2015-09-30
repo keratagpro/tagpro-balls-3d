@@ -1,0 +1,25 @@
+{
+  "name": "tagpro-balls-threejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  	"build": "browserify src/index.js --outfile build/index.js",
+    "watch": "watchify src/index.js --outfile build/index.js",
+    "build:dummy": "browserify src/tagpro-dummy.js --verbose --outfile build/tagpro-dummy.js",
+    "watch:dummy": "watchify src/tagpro-dummy.js --verbose --outfile build/tagpro-dummy.js"
+  },
+  "browserify": {
+  	"transform": [
+  		"babelify"
+  	]
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babelify": "^6.3.0",
+    "browserify": "^11.2.0",
+    "three": "^0.72.0",
+    "watchify": "^3.4.0"
+  }
+}
