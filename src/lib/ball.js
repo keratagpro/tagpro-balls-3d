@@ -1,3 +1,5 @@
+import THREE from 'three';
+
 var radius = 19;
 var widthSegments = 16;
 var heightSegments = 12;

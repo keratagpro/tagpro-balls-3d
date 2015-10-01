@@ -1,3 +1,4 @@
+import after from './lib/after_hook';
 import createBall from './lib/ball';
 
 var w = 1280;
@@ -17,6 +18,8 @@ tagpro.ready(function() {
 	var camera = createCamera();
 	tagpro.threeCamera = camera;
 
+	var tr = tagpro.renderer;
+
 	var renderer = new THREE.WebGLRenderer({
 		alpha: true,
 		antialias: true
@@ -33,18 +36,18 @@ tagpro.ready(function() {
 	THREE.ImageUtils.crossOrigin = '';
 
 	var textureEarth = THREE.ImageUtils.loadTexture(
-		'http://jeromeetienne.github.io/threex.planets/images/earthmap1k.jpg',
+		'textures/planets/earthmap1k.jpg',
 		undefined,
 		render);
 	textureEarth.anisotropy = renderer.getMaxAnisotropy();
-	textureEarth.minFilter = THREE.NearestFilter;
+	textureEarth.minFilter = THREE.LinearFilter;
 
 	var textureMars = THREE.ImageUtils.loadTexture(
-		'http://jeromeetienne.github.io/threex.planets/images/marsmap1k.jpg',
+		'textures/planets/marsmap1k.jpg',
 		undefined,
 		render);
 	textureMars.anisotropy = renderer.getMaxAnisotropy();
-	textureMars.minFilter = THREE.NearestFilter;
+	textureMars.minFilter = THREE.LinearFilter;
 
 	// var earth = createBall(textureEarth);
 	// earth.position.x = 500;
@@ -62,22 +65,18 @@ tagpro.ready(function() {
 	// geometry.applyMatrix( new THREE.Matrix4().makeTranslation( -16 * 40, 10 * 40, 0 ) );
 	// scene.add( plane );
 
-	var origPlayerSprite = tagpro.renderer.createPlayerSprite;
-	tagpro.renderer.createPlayerSprite = function(player) {
-		origPlayerSprite(player);
+	after(tr, 'createPlayerSprite', function(player) {
+		console.log('create', player);
 
 		player.lastAngle = player.angle; // initialize lastAngle
 
 		var texture = player.team === 2 ? textureEarth : textureMars;
 		player.sphere = createBall(texture);
 
-		scene.add(player.sphere);		
-	}
+		scene.add(player.sphere);
+	});
 
-	var origUpdateSpritePos = tagpro.renderer.updatePlayerSpritePosition;
-	tagpro.renderer.updatePlayerSpritePosition = function(player) {
-		origUpdateSpritePos(player);
-
+	after(tr, 'updatePlayerSpritePosition', function(player) {
 		player.sphere.material.visible = !player.dead;
 
 		player.sphere.position.x = -player.x;
@@ -90,28 +89,22 @@ tagpro.ready(function() {
 		player.lastAngle = player.angle;
 
 		rotateAroundWorldAxis(player.sphere, vecZ, -theta * rotationCoefficient);
-	}
+	});
 
-	var origChatResize = tagpro.chat.resize;
-	tagpro.chat.resize = function() {
-		origChatResize();
+	after(tr, 'updatePlayerColor', function(player) {
+		var color = player.team == 1 ? 'red' : 'blue';
+		var tileId = color + 'ball';
 
-		var cnv = tagpro.renderer.canvas;
-		$(renderer.domElement).css({
-			left: cnv.offsetLeft,
-			top: cnv.offsetTop,
-			width: null,
-			height: null
-		}).attr({
-			width: cnv.width,
-			height: cnv.height
-		});
 
+	});
+
+	after(tagpro.chat, 'resize', function() {
+		var cnv = tr.canvas;
 		renderer.setSize(cnv.width, cnv.height);
-	};
+	});
 
-	var origCameraPosition = tagpro.renderer.updateCameraPosition;
-	tagpro.renderer.updateCameraPosition = function(player) {
+	var origCameraPosition = tr.updateCameraPosition;
+	tr.updateCameraPosition = function(player) {
 		origCameraPosition(player);
 
 		setCameraPosition(camera, player);
@@ -123,15 +116,15 @@ tagpro.ready(function() {
 		}
 	};
 
-	var origRender = tagpro.renderer.render;
-	tagpro.renderer.render = function(stage) {
+	var origRender = tr.render;
+	tr.render = function(stage) {
 		origRender(stage);
 
 		render();
 	}
 
-	var origDestroyPlayer = tagpro.renderer.destroyPlayer;
-	tagpro.renderer.destroyPlayer = function(player) {
+	var origDestroyPlayer = tr.destroyPlayer;
+	tr.destroyPlayer = function(player) {
 		scene.remove(player.sphere);
 
 		origDestroyPlayer(player);

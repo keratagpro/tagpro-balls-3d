@@ -8,4 +8,6 @@
 // @version       0.1
 // @require       https://cdnjs.cloudflare.com/ajax/libs/three.js/r72/three.min.js
 // @grant         GM_addStyle
+// @grant         GM_setValue
+// @grant         GM_getValue
 // ==/UserScript==
