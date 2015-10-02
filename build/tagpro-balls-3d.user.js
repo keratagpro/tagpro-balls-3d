@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          TagPro Balls 3D
 // @description   Replaces ball sprites with rotating 3D ball sprites using THREE.js.
-// @version       0.2.0
+// @version       0.2.1
 // @author        Kera
 // @grant         GM_getValue
 // @grant         GM_setValue
