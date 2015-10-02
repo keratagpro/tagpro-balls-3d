@@ -107,7 +107,7 @@ function addLights(scene) {
 	scene.add(light);
 
 	var light = new _three2['default'].DirectionalLight(0xcccccc, 1);
-	light.position.set(500, -500, 500);
+	light.position.set(200, -200, 500);
 	scene.add(light);
 }
 
@@ -165,8 +165,6 @@ tagpro.ready(function () {
 	});
 
 	(0, _libAfter_hook2['default'])(tr, 'updatePlayerSpritePosition', function (player) {
-		// player.sphere.material.visible = !player.dead;
-
 		rotateAroundWorldAxis(player.sphere, vecX, player.lx * velocityCoefficient);
 		rotateAroundWorldAxis(player.sphere, vecY, player.ly * velocityCoefficient);
 
@@ -178,12 +176,24 @@ tagpro.ready(function () {
 		baseTexture3d.dirty();
 	});
 
+	// Replace original tagpro.renderer.updatePlayerColor
+	tr.updatePlayerColor = function (player) {
+		var color = player.team === 1 ? 'red' : 'blue';
+		var tileId = color + 'ball';
+
+		if (player.sprites.actualBall.tileId !== tileId) {
+			player.sphere.material.map = getSphereTextureForPlayer(player);
+			// NOTE: material.needsUpdate() ? baseTexture3d.dirty() ?
+			player.sprites.actualBall.tileId = tileId;
+		}
+	};
+
 	(0, _libAfter_hook2['default'])(tr, 'render', function () {
 		render3d();
 	});
 
 	(0, _libAfter_hook2['default'])(tr, 'destroyPlayer', function (player) {
-		scene.remove(player.sphere);
+		container.remove(player.sphere);
 
 		delete player.sphere;
 	});
