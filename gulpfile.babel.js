@@ -1,7 +1,3 @@
-import gulp from 'gulp';
+import { sync as glob } from 'glob';
 
-import './tasks/assets';
-import './tasks/build';
-import './tasks/deploy';
-import './tasks/meta';
-import './tasks/update-textures';
+glob('./tasks/**/*.js').forEach(file => require(file));
