@@ -23,6 +23,8 @@
     "browserify": "^11.2.0",
     "browserify-shim": "^3.8.10",
     "defaults": "^1.0.3",
+    "gh-pages": "^0.4.0",
+    "git-config": "0.0.7",
     "glob": "^5.0.15",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-header": "^1.7.1",
