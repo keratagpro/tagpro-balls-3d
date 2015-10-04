@@ -18,7 +18,7 @@ export function addLightsToScene(scene, options) {
 		ambientColor: 0x888888,
 		color: 0xcccccc,
 		position: [-200, -200, -400],
-		intensity: 1
+		intensity: 0.8
 	});
 
 	var light = new THREE.AmbientLight(options.ambientColor);
