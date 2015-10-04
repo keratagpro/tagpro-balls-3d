@@ -51,8 +51,8 @@ export function getTexturePath(player) {
 	var rootPath = "http://keratagpro.github.io/tagpro-balls-3d/textures/";
 
 	var texturePath = player.team === 1 ?
-		"planets/marsmap1k.jpg" :
-		"planets/earthmap1k.jpg";
+		"planets/mars.jpg" :
+		"planets/earth.jpg";
 
 	return rootPath + texturePath;
 }
