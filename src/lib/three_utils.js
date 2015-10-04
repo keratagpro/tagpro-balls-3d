@@ -31,7 +31,7 @@ export function addLightsToScene(scene, options) {
 }
 
 export function createSphere(texture) {
-	options = {
+	var options = {
 		radius: 19,
 		widthSegments: 16,
 		heightSegments: 12,
