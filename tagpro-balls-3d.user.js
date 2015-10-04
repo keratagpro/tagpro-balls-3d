@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          TagPro Balls 3D
 // @description   Replaces ball sprites with rotating 3D ball sprites using THREE.js.
-// @version       0.3.0
+// @version       0.3.1
 // @author        Kera
 // @grant         GM_getValue
 // @grant         GM_setValue
@@ -208,18 +208,18 @@ function ObjectGrid(options) {
 
 	this.type = "ObjectGrid";
 
-	this._children = [];
+	this._grid = [];
 };
 
 ObjectGrid.prototype = Object.create(_three2["default"].Object3D.prototype);
 ObjectGrid.prototype.constructor = ObjectGrid;
 
 ObjectGrid.prototype.add = function (object) {
-	var idx = this._children.indexOf(null);
+	var idx = this._grid.indexOf(null);
 	if (idx < 0) {
-		idx = this._children.push(object.uuid) - 1;
+		idx = this._grid.push(object.uuid) - 1;
 	} else {
-		this._children[idx] = object.uuid;
+		this._grid[idx] = object.uuid;
 	}
 
 	var col = idx % this.cols;
@@ -242,13 +242,13 @@ ObjectGrid.prototype.add = function (object) {
 };
 
 ObjectGrid.prototype.remove = function (object) {
-	var idx = this._children.indexOf(object.uuid);
+	var idx = this._grid.indexOf(object.uuid);
 
 	if (idx < 0) {
 		return;
 	}
 
-	this._children[idx] = null;
+	this._grid[idx] = null;
 
 	_three2["default"].Object3D.prototype.remove.call(this, object);
 };
@@ -338,7 +338,7 @@ function updateTexture(player) {
 function getTexturePath(player) {
 	var rootPath = "http://keratagpro.github.io/tagpro-balls-3d/textures/";
 
-	var texturePath = player.team === 1 ? "planets/marsmap1k.jpg" : "planets/earthmap1k.jpg";
+	var texturePath = player.team === 1 ? "planets/mars.jpg" : "planets/earth.jpg";
 
 	return rootPath + texturePath;
 }
