@@ -69,6 +69,10 @@ var _libThree_utils = require('./lib/three_utils');
 
 var ThreeUtils = _interopRequireWildcard(_libThree_utils);
 
+var _libObject_grid = require('./lib/object_grid');
+
+var _libObject_grid2 = _interopRequireDefault(_libObject_grid);
+
 _three2['default'].ImageUtils.crossOrigin = '';
 
 var GRID_COLS = 10;
@@ -81,7 +85,7 @@ var CANVAS_HEIGHT = GRID_ROWS * TILE_SIZE;
 var scene = new _three2['default'].Scene();
 ThreeUtils.addLightsToScene(scene);
 
-var grid = new ObjectGrid({
+var grid = new _libObject_grid2['default']({
 	cols: GRID_COLS,
 	rows: GRID_ROWS,
 	cellSize: TILE_SIZE
@@ -91,6 +95,9 @@ scene.add(grid);
 
 var renderer = ThreeUtils.createRenderer();
 renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+
+// For debugging
+// document.body.appendChild(renderer.domElement);
 
 var camera = ThreeUtils.createCamera({
 	width: grid.width,
@@ -107,16 +114,17 @@ tagpro.ready(function () {
 	var tr = tagpro.renderer;
 
 	(0, _libHooks.after)(tr, 'createBallSprite', function (player) {
-		var sphere = PlayerUtils.createSphere(player);
-		player.sphere = sphere;
-
-		var rect = grid.add(sphere);
-
-		PlayerUtils.setSprite(player, baseTexture, rect);
-
-		baseTexture.dirty();
-
 		player.lastAngle = player.angle; // initialize lastAngle
+
+		PlayerUtils.createSphereAsync(player, function (sphere) {
+			player.sphere = sphere;
+
+			var rect = grid.add(sphere);
+
+			PlayerUtils.setSprite(player, baseTexture, rect);
+
+			baseTexture.dirty();
+		});
 	});
 
 	(0, _libHooks.after)(tr, 'destroyPlayer', function (player) {
@@ -126,6 +134,8 @@ tagpro.ready(function () {
 
 	(0, _libHooks.after)(tr, 'updatePlayerSpritePosition', function (player) {
 		PlayerUtils.rotateSphere(player);
+
+		player.lastAngle = player.angle;
 
 		baseTexture.dirty();
 	});
@@ -137,6 +147,7 @@ tagpro.ready(function () {
 
 		if (player.sprites.actualBall.tileId !== tileId) {
 			PlayerUtils.updateTexture(player);
+			player.sprites.actualBall.tileId = tileId;
 		}
 	};
 
@@ -144,7 +155,7 @@ tagpro.ready(function () {
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/hooks":9,"./lib/player_utils":11,"./lib/three_utils":12}],9:[function(require,module,exports){
+},{"./lib/hooks":9,"./lib/object_grid":10,"./lib/player_utils":11,"./lib/three_utils":12}],9:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -176,40 +187,39 @@ function after(obj, methodName, callback) {
 
 },{}],10:[function(require,module,exports){
 (function (global){
-'use strict';
+"use strict";
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _defaults = require('defaults');
-
-var _defaults2 = _interopRequireDefault(_defaults);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var _three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
 
 var _three2 = _interopRequireDefault(_three);
 
 function ObjectGrid(options) {
-	_three2['default'].Object3D.call(this);
+	_three2["default"].Object3D.call(this);
 
 	this.cols = options.cols;
 	this.rows = options.rows;
 	this.cellSize = options.cellSize;
 
-	this._grid = [];
+	this.type = "ObjectGrid";
+
+	this._children = [];
 };
 
-ObjectGrid.prototype.add = function (object) {
-	_three2['default'].Object3D.prototype.add.call(this, object);
+ObjectGrid.prototype = Object.create(_three2["default"].Object3D.prototype);
+ObjectGrid.prototype.constructor = ObjectGrid;
 
-	var idx = this._grid.indexOf(null);
+ObjectGrid.prototype.add = function (object) {
+	var idx = this._children.indexOf(null);
 	if (idx < 0) {
-		idx = this._grid.push(object) - 1;
+		idx = this._children.push(object.uuid) - 1;
 	} else {
-		this._grid[idx] = object;
+		this._children[idx] = object.uuid;
 	}
 
 	var col = idx % this.cols;
@@ -221,6 +231,8 @@ ObjectGrid.prototype.add = function (object) {
 	object.position.x = x + this.cellSize / 2;
 	object.position.y = y + this.cellSize / 2;
 
+	_three2["default"].Object3D.prototype.add.call(this, object);
+
 	return {
 		x: x,
 		y: y,
@@ -230,33 +242,32 @@ ObjectGrid.prototype.add = function (object) {
 };
 
 ObjectGrid.prototype.remove = function (object) {
-	_three2['default'].Object3D.prototype.remove.call(this, object);
-
-	var idx = this._grid.indexOf(object);
+	var idx = this._children.indexOf(object.uuid);
 
 	if (idx < 0) {
 		return;
 	}
 
-	this._grid[idx] = 0;
+	this._children[idx] = null;
+
+	_three2["default"].Object3D.prototype.remove.call(this, object);
 };
 
-exports['default'] = ObjectGrid;
-module.exports = exports['default'];
+exports["default"] = ObjectGrid;
+module.exports = exports["default"];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"defaults":4}],11:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (global){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
 	value: true
 });
-exports.createSphere = createSphere;
+exports.createSphereAsync = createSphereAsync;
 exports.rotateSphere = rotateSphere;
-exports.createGrid = createGrid;
 exports.setSprite = setSprite;
-exports.getTexture = getTexture;
+exports.loadTextureAsync = loadTextureAsync;
 exports.updateTexture = updateTexture;
 exports.getTexturePath = getTexturePath;
 
@@ -276,10 +287,6 @@ var _three_utils = require('./three_utils');
 
 var ThreeUtils = _interopRequireWildcard(_three_utils);
 
-var _object_grid = require('./object_grid');
-
-var _object_grid2 = _interopRequireDefault(_object_grid);
-
 var velocityCoefficient = 0.1;
 var rotationCoefficient = 1.0;
 
@@ -287,33 +294,26 @@ var vecY = new _three2['default'].Vector3(1, 0, 0);
 var vecX = new _three2['default'].Vector3(0, 1, 0);
 var vecZ = new _three2['default'].Vector3(0, 0, 1);
 
-function createSphere(player) {
-	return ThreeUtils.createBall({
-		map: getTexture(player)
+function createSphereAsync(player, callback) {
+	loadTextureAsync(player, function (texture) {
+		var sphere = ThreeUtils.createSphere(texture);
+		callback(sphere);
 	});
 }
 
 ;
 
 function rotateSphere(player) {
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecX, -player.lx * velocityCoefficient);
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecY, player.ly * velocityCoefficient);
+	if (!player.sphere) {
+		return;
+	}
+
+	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecX, -(player.lx || 0) * velocityCoefficient);
+	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecY, (player.ly || 0) * velocityCoefficient);
 
 	var theta = player.angle - player.lastAngle;
 	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecZ, theta * rotationCoefficient);
-
-	player.lastAngle = player.angle;
 }
-
-function createGrid() {
-	return new _object_grid2['default']({
-		cols: 10,
-		rows: 10,
-		cellSize: 40
-	});
-}
-
-;
 
 function setSprite(player, baseTexture, rect) {
 	var frame = new PIXI.Rectangle(rect.x, rect.y, rect.width, rect.height);
@@ -322,14 +322,15 @@ function setSprite(player, baseTexture, rect) {
 	player.sprites.actualBall.setTexture(texture);
 }
 
-function getTexture(player) {
+function loadTextureAsync(player, callback) {
 	var texturePath = getTexturePath(player);
-
-	return ThreeUtils.createTexture(texturePath);
+	ThreeUtils.loadTextureAsync(texturePath, callback);
 }
 
 function updateTexture(player) {
-	player.sphere.material.map = getTexture(player);
+	loadTextureAsync(player, function (texture) {
+		player.sphere.material = ThreeUtils.createMaterial(texture);
+	});
 }
 
 ;
@@ -337,13 +338,13 @@ function updateTexture(player) {
 function getTexturePath(player) {
 	var rootPath = "http://keratagpro.github.io/tagpro-balls-3d/textures/";
 
-	var texturePath = player.team === 1 ? "planets/mars.jpg" : "planets/earth.jpg";
+	var texturePath = player.team === 1 ? "planets/marsmap1k.jpg" : "planets/earthmap1k.jpg";
 
 	return rootPath + texturePath;
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./object_grid":10,"./three_utils":12,"defaults":4}],12:[function(require,module,exports){
+},{"./three_utils":12,"defaults":4}],12:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -352,8 +353,8 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.createRenderer = createRenderer;
 exports.addLightsToScene = addLightsToScene;
-exports.createBall = createBall;
-exports.createTexture = createTexture;
+exports.createSphere = createSphere;
+exports.loadTextureAsync = loadTextureAsync;
 exports.createCamera = createCamera;
 exports.rotateAroundWorldAxis = rotateAroundWorldAxis;
 
@@ -401,19 +402,18 @@ function addLightsToScene(scene, options) {
 	scene.add(light);
 }
 
-function createBall(options) {
-	options = (0, _defaults2['default'])(options, {
+function createSphere(texture) {
+	options = {
 		radius: 19,
 		widthSegments: 16,
-		heightSegments: 12,
-		shading: _three2['default'].SmoothShading
-	});
+		heightSegments: 12
+	};
 
 	var geometry = new _three2['default'].SphereGeometry(options.radius, options.widthSegments, options.heightSegments);
 
 	var material = new _three2['default'].MeshPhongMaterial({
-		shading: options.shading,
-		map: options.map
+		shading: _three2['default'].SmoothShading,
+		map: texture
 	});
 
 	return new _three2['default'].Mesh(geometry, material);
@@ -421,17 +421,13 @@ function createBall(options) {
 
 ;
 
-function createTexture(texturePath, options, callback) {
-	options = (0, _defaults2['default'])(options, {
-		anisotropy: 1,
-		minFilter: _three2['default'].LinearFilter
+function loadTextureAsync(texturePath, callback) {
+	_three2['default'].ImageUtils.loadTexture(texturePath, undefined, function (texture) {
+		texture.anisotropy = 1;
+		texture.minFilter = _three2['default'].LinearFilter;
+
+		callback(texture);
 	});
-
-	var texture = _three2['default'].ImageUtils.loadTexture(texturePath, undefined, callback);
-
-	(0, _objectAssign2['default'])(texture, options);
-
-	return texture;
 }
 
 ;
@@ -458,6 +454,10 @@ function createCamera(options) {
 // Rotate an object around an arbitrary axis in world space      
 
 function rotateAroundWorldAxis(object, axis, radians) {
+	if (radians === 0 || isNaN(radians)) {
+		return;
+	}
+
 	rotWorldMatrix = new _three2['default'].Matrix4();
 	rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
 	rotWorldMatrix.multiply(object.matrix); // pre-multiply

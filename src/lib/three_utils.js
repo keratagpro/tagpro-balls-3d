@@ -30,35 +30,30 @@ export function addLightsToScene(scene, options) {
 	scene.add(light);
 }
 
-export function createBall(options) {
-	options = defaults(options, {
+export function createSphere(texture) {
+	options = {
 		radius: 19,
 		widthSegments: 16,
 		heightSegments: 12,
-		shading: THREE.SmoothShading
-	});
+	};
 
 	var geometry = new THREE.SphereGeometry(options.radius, options.widthSegments, options.heightSegments);
 
 	var material = new THREE.MeshPhongMaterial({
-		shading: options.shading,
-		map: options.map
+		shading: THREE.SmoothShading,
+		map: texture
 	});
 
 	return new THREE.Mesh(geometry, material);
 };
 
-export function createTexture(texturePath, options, callback) {
-	options = defaults(options, {
-		anisotropy: 1,
-		minFilter: THREE.LinearFilter
+export function loadTextureAsync(texturePath, callback) {
+	THREE.ImageUtils.loadTexture(texturePath, undefined, function(texture) {
+		texture.anisotropy = 1;
+		texture.minFilter = THREE.LinearFilter;
+
+		callback(texture);
 	});
-
-	var texture = THREE.ImageUtils.loadTexture(texturePath, undefined, callback);
-
-	assign(texture, options);
-
-	return texture;
 };
 
 export function createCamera(options) {
@@ -85,6 +80,10 @@ export function createCamera(options) {
 
 // Rotate an object around an arbitrary axis in world space       
 export function rotateAroundWorldAxis(object, axis, radians) {
+	if (radians === 0 || isNaN(radians)) {
+		return;
+	}
+
 	rotWorldMatrix = new THREE.Matrix4();
 	rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
 	rotWorldMatrix.multiply(object.matrix); // pre-multiply

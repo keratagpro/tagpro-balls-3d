@@ -2,7 +2,6 @@ import defaults from 'defaults';
 import THREE from 'three';
 
 import * as ThreeUtils from './three_utils';
-import ObjectGrid from './object_grid';
 
 var velocityCoefficient = 0.1;
 var rotationCoefficient = 1.0;
@@ -11,29 +10,24 @@ var vecY = new THREE.Vector3(1, 0, 0);
 var vecX = new THREE.Vector3(0, 1, 0);
 var vecZ = new THREE.Vector3(0, 0, 1);
 
-export function createSphere(player) {
-	return ThreeUtils.createBall({
-		map: getTexture(player)
+export function createSphereAsync(player, callback) {
+	loadTextureAsync(player, function(texture) {
+		var sphere = ThreeUtils.createSphere(texture);
+		callback(sphere);
 	});
 };
 
 export function rotateSphere(player) {
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecX, -player.lx * velocityCoefficient);
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecY, player.ly * velocityCoefficient);
+	if (!player.sphere) {
+		return;
+	}
+
+	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecX, -(player.lx || 0) * velocityCoefficient);
+	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecY, (player.ly || 0) * velocityCoefficient);
 
 	var theta = player.angle - player.lastAngle;
 	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecZ, theta * rotationCoefficient);
-
-	player.lastAngle = player.angle;
 }
-
-export function createGrid() {
-	return new ObjectGrid({
-		cols: 10,
-		rows: 10,
-		cellSize: 40
-	});
-};
 
 export function setSprite(player, baseTexture, rect) {
 	var frame = new PIXI.Rectangle(rect.x, rect.y, rect.width, rect.height);
@@ -42,21 +36,23 @@ export function setSprite(player, baseTexture, rect) {
 	player.sprites.actualBall.setTexture(texture);
 }
 
-export function getTexture(player) {
+export function loadTextureAsync(player, callback) {
 	var texturePath = getTexturePath(player);
-
-	return ThreeUtils.createTexture(texturePath);
+	ThreeUtils.loadTextureAsync(texturePath, callback);
 }
+
 export function updateTexture(player) {
-	player.sphere.material.map = getTexture(player);
+	loadTextureAsync(player, function(texture) {
+		player.sphere.material = ThreeUtils.createMaterial(texture);
+	})
 };
 
 export function getTexturePath(player) {
 	var rootPath = "http://keratagpro.github.io/tagpro-balls-3d/textures/";
 
 	var texturePath = player.team === 1 ?
-		"planets/mars.jpg" :
-		"planets/earth.jpg";
+		"planets/marsmap1k.jpg" :
+		"planets/earthmap1k.jpg";
 
 	return rootPath + texturePath;
 }

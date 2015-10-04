@@ -4,6 +4,7 @@ import PIXI from 'pixi.js';
 import { before, after } from './lib/hooks';
 import * as PlayerUtils from './lib/player_utils';
 import * as ThreeUtils from './lib/three_utils';
+import ObjectGrid from './lib/object_grid';
 
 THREE.ImageUtils.crossOrigin = '';
 
@@ -28,6 +29,9 @@ scene.add(grid);
 var renderer = ThreeUtils.createRenderer();
 renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
+// For debugging
+// document.body.appendChild(renderer.domElement);
+
 var camera = ThreeUtils.createCamera({
 	width: grid.width,
 	height: grid.height
@@ -43,16 +47,17 @@ tagpro.ready(function() {
 	var tr = tagpro.renderer;
 
 	after(tr, 'createBallSprite', function(player) {
-		var sphere = PlayerUtils.createSphere(player);
-		player.sphere = sphere;
-
-		var rect = grid.add(sphere);
-
-		PlayerUtils.setSprite(player, baseTexture, rect);
-
-		baseTexture.dirty();
-
 		player.lastAngle = player.angle; // initialize lastAngle
+
+		PlayerUtils.createSphereAsync(player, function(sphere) {
+			player.sphere = sphere;
+
+			var rect = grid.add(sphere);
+
+			PlayerUtils.setSprite(player, baseTexture, rect);
+
+			baseTexture.dirty();
+		});
 	});
 
 	after(tr, 'destroyPlayer', function(player) {
@@ -62,6 +67,8 @@ tagpro.ready(function() {
 
 	after(tr, 'updatePlayerSpritePosition', function(player) {
 		PlayerUtils.rotateSphere(player);
+
+		player.lastAngle = player.angle;
 
 		baseTexture.dirty();
 	});
@@ -73,6 +80,7 @@ tagpro.ready(function() {
 
 		if (player.sprites.actualBall.tileId !== tileId) {
 			PlayerUtils.updateTexture(player);
+			player.sprites.actualBall.tileId = tileId;
 		}
 	};
 

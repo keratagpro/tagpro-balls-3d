@@ -1,4 +1,3 @@
-import defaults from 'defaults';
 import THREE from 'three';
 
 function ObjectGrid(options) {
@@ -8,18 +7,21 @@ function ObjectGrid(options) {
 	this.rows = options.rows;
 	this.cellSize = options.cellSize;
 
+	this.type = "ObjectGrid";
+
 	this._grid = [];
 };
 
-ObjectGrid.prototype.add = function(object) {
-	THREE.Object3D.prototype.add.call(this, object);
+ObjectGrid.prototype = Object.create(THREE.Object3D.prototype);
+ObjectGrid.prototype.constructor = ObjectGrid;
 
+ObjectGrid.prototype.add = function(object) {
 	var idx = this._grid.indexOf(null);
 	if (idx < 0) {
-		idx = this._grid.push(object) - 1;
+		idx = this._grid.push(object.uuid) - 1;
 	}
 	else {
-		this._grid[idx] = object;
+		this._grid[idx] = object.uuid;
 	}
 
 	var col = (idx % this.cols);
@@ -31,6 +33,8 @@ ObjectGrid.prototype.add = function(object) {
 	object.position.x = x + this.cellSize / 2;
 	object.position.y = y + this.cellSize / 2;
 
+	THREE.Object3D.prototype.add.call(this, object);
+
 	return {
 		x: x,
 		y: y,
@@ -40,15 +44,15 @@ ObjectGrid.prototype.add = function(object) {
 };
 
 ObjectGrid.prototype.remove = function(object) {
-	THREE.Object3D.prototype.remove.call(this, object);
-
-	var idx = this._grid.indexOf(object);
+	var idx = this._grid.indexOf(object.uuid);
 	
 	if (idx < 0) {
 		return;
 	}
 
-	this._grid[idx] = 0;
+	this._grid[idx] = null;
+
+	THREE.Object3D.prototype.remove.call(this, object);
 };
 
 export default ObjectGrid;
