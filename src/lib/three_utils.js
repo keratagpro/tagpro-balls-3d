@@ -1,25 +1,33 @@
-import assign from 'object-assign';
-import defaults from 'defaults';
+import $ from 'jquery';
 import THREE from 'three';
 
+THREE.ImageUtils.crossOrigin = '';
+
 var rotWorldMatrix;
+var vecY = new Vector3(1, 0, 0);
+var vecX = new Vector3(0, 1, 0);
+var vecZ = new Vector3(0, 0, 1);
+
+export function createStuff() {
+	return 10;
+}
 
 export function createRenderer(options) {
-	options = defaults(options, {
-		alpha: true,
-		antialias: true
-	})
+	// options = $.extend({
+		// alpha: true,
+		// antialias: true
+	// }, options);
 
 	return new THREE.WebGLRenderer(options);
-};
+}
 
 export function addLightsToScene(scene, options) {
-	options = defaults(options, {
+	options = $.extend({
 		ambientColor: 0x888888,
 		color: 0xcccccc,
 		position: [-200, -200, -400],
 		intensity: 0.8
-	});
+	}, options);
 
 	var light = new THREE.AmbientLight(options.ambientColor);
 	scene.add(light);
@@ -45,7 +53,7 @@ export function createSphere(texture) {
 	});
 
 	return new THREE.Mesh(geometry, material);
-};
+}
 
 export function loadTextureAsync(texturePath, callback) {
 	THREE.ImageUtils.loadTexture(texturePath, undefined, function(texture) {
@@ -54,13 +62,13 @@ export function loadTextureAsync(texturePath, callback) {
 
 		callback(texture);
 	});
-};
+}
 
 export function createCamera(options) {
-	options = defaults(options, {
+	options = $.extend({
 		width: 400,
 		height: 400
-	});
+	}, options);
 
 	var camera = new THREE.OrthographicCamera(
 		-options.width/2, options.width/2,
@@ -89,4 +97,16 @@ export function rotateAroundWorldAxis(object, axis, radians) {
 	rotWorldMatrix.multiply(object.matrix); // pre-multiply
 	object.matrix = rotWorldMatrix;
 	object.rotation.setFromRotationMatrix(object.matrix);
+}
+
+export function rotateX(object, radians) {
+	rotateAroundWorldAxis(object, vecX, radians);
+}
+
+export function rotateY(object, radians) {
+	rotateAroundWorldAxis(object, vecY, radians);
+}
+
+export function rotateZ(object, radians) {
+	rotateAroundWorldAxis(object, vecZ, radians);
 }

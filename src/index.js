@@ -4,6 +4,7 @@ import PIXI from 'pixi.js';
 import { before, after } from './lib/hooks';
 import * as PlayerUtils from './lib/player_utils';
 import * as ThreeUtils from './lib/three_utils';
+
 import ObjectGrid from './lib/object_grid';
 
 THREE.ImageUtils.crossOrigin = '';
@@ -30,7 +31,7 @@ var renderer = ThreeUtils.createRenderer();
 renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
 // For debugging
-// document.body.appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 
 var camera = ThreeUtils.createCamera({
 	width: grid.width,

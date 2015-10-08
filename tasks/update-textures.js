@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import gulp from 'gulp';
 import glob from 'glob';
 import { posix as path } from 'path';
 import fs from 'fs';
@@ -10,7 +9,7 @@ export var textureMap = <%= map %>;
 export default <%= array %>;
 `;
 
-gulp.task('update-textures', function(done) {
+export default function updateTextures(done) {
 	glob('textures/**/*.*', function(err, files) {
 		var result = _(files).map(f => {
 			var file = path.relative('textures', f);
@@ -38,4 +37,4 @@ gulp.task('update-textures', function(done) {
 			map: JSON.stringify(grouped, null, '\t')
 		}), done);
 	});
-});
+}

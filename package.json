@@ -1,41 +1,24 @@
 {
   "name": "tagpro-balls-threejs",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "gulp build"
-  },
-  "browserify": {
-    "transform": [
-      "babelify",
-      "browserify-shim"
-    ]
-  },
-  "browserify-shim": {
-    "three": "global:THREE",
-    "pixi.js": "global:PIXI"
+    "start": "gulp",
+    "bump": "npm version patch",
+    "deploy": "gulp deploy"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babelify": "^6.3.0",
-    "browserify": "^11.2.0",
-    "browserify-shim": "^3.8.10",
-    "defaults": "^1.0.3",
+    "babel-core": "^5.8.25",
     "gh-pages": "^0.4.0",
     "git-config": "0.0.7",
-    "glob": "^5.0.15",
     "gulp": "github:gulpjs/gulp#4.0",
-    "gulp-header": "^1.7.1",
+    "gulp-concat": "^2.6.0",
     "gulp-rename": "^1.2.2",
     "gulp-template": "^3.0.0",
     "lodash": "^3.10.1",
-    "object-assign": "^4.0.1",
-    "three": "^0.72.0",
-    "uglifyify": "^3.0.1",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.4.0"
+    "rollup": "^0.18.5"
   }
 }

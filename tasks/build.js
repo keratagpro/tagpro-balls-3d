@@ -1,23 +1,27 @@
 import gulp from 'gulp';
-import header from 'gulp-header';
-import browserify from 'browserify';
-import source from 'vinyl-source-stream';
-import buffer from 'vinyl-buffer';
-import fs from 'fs';
-import project from '../package.json';
+import concat from 'gulp-concat';
+import template from 'gulp-template';
+import rollup from 'rollup';
 
-gulp.task('build', function() {
-	var b = browserify({
-		entries: './src/index.js'
-	}).transform({
-		global: true,
-		ignore: ['**/src/**/*'] // Minify only external dependencies
-	}, 'uglifyify');
+import { version } from '../package.json';
+var rootUrl = "keratagpro.github.io/tagpro-balls-3d";
 
-	return b.bundle()
-		.pipe(source('tagpro-balls-3d.user.js'))
-		.pipe(buffer())
-		.pipe(header(fs.readFileSync('./src/header-globals.js', 'utf8')))
-		.pipe(header(fs.readFileSync('./src/header.js', 'utf8'), { version: project.version }))
-		.pipe(gulp.dest('./build'));
-});
+export default function build() {
+	return rollup.rollup({
+		entry: './src/index.js',
+		external: ['jquery', 'three', 'pixi.js']
+	}).then(function(bundle) {
+		var output = bundle.generate({
+			format: 'iife'
+		});
+
+		return gulp.src(['./src/meta.tpl.js', './src/userscript.tpl.js'])
+			.pipe(template({
+				version,
+				rootUrl,
+				script: output.code
+			}, { interpolate: /{{([\s\S]+?)}}/g }))
+			.pipe(concat('tagpro-balls-3d.user.js'))
+			.pipe(gulp.dest('./build'));
+	});
+}

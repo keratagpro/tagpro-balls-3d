@@ -1,6 +1,6 @@
 import gulp from 'gulp';
 
-gulp.task('assets', function() {
+export default function assets() {
 	return gulp.src(['./assets/**/*'])
 		.pipe(gulp.dest('./build/'));
-});
+}
