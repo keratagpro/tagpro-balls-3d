@@ -8,7 +8,7 @@ export default function meta() {
 	return gulp.src('./src/meta.tpl.js')
 		.pipe(template({
 			version: project.version
-		}, { interpolate: /{{([\s\S]+?)}}/g }))
+		}))
 		.pipe(rename('tagpro-balls-3d.meta.js'))
 		.pipe(gulp.dest('./build'));
-};
+}

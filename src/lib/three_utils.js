@@ -1,67 +1,42 @@
 import $ from 'jquery';
 import THREE from 'three';
 
+import config from './config';
+
 THREE.ImageUtils.crossOrigin = '';
 
 var rotWorldMatrix;
-var vecY = new Vector3(1, 0, 0);
-var vecX = new Vector3(0, 1, 0);
-var vecZ = new Vector3(0, 0, 1);
+var vecY = new THREE.Vector3(1, 0, 0);
+var vecX = new THREE.Vector3(0, 1, 0);
+var vecZ = new THREE.Vector3(0, 0, 1);
 
-export function createStuff() {
-	return 10;
-}
-
-export function createRenderer(options) {
-	// options = $.extend({
-		// alpha: true,
-		// antialias: true
-	// }, options);
-
-	return new THREE.WebGLRenderer(options);
-}
-
-export function addLightsToScene(scene, options) {
-	options = $.extend({
-		ambientColor: 0x888888,
-		color: 0xcccccc,
-		position: [-200, -200, -400],
-		intensity: 0.8
-	}, options);
-
-	var light = new THREE.AmbientLight(options.ambientColor);
+export function addLightsToScene(scene) {
+	var light = new THREE.AmbientLight(config.ambientLightColor);
 	scene.add(light);
 
-	var light = new THREE.DirectionalLight(options.hex, options.intensity);
-	light.position.set.apply(light.position, options.position);
+	light = new THREE.DirectionalLight(config.lightColor, config.lightIntensity);
+	light.position.set.apply(light.position, config.lightPosition);
 
 	scene.add(light);
 }
 
-export function createSphere(texture) {
-	var options = {
-		radius: 19,
-		widthSegments: 16,
-		heightSegments: 12,
-	};
-
-	var geometry = new THREE.SphereGeometry(options.radius, options.widthSegments, options.heightSegments);
+export function createSphereMesh(texture) {
+	var geometry = new THREE.SphereGeometry(config.sphereRadius, config.sphereWidthSegments, config.sphereHeightSegments);
 
 	var material = new THREE.MeshPhongMaterial({
-		shading: THREE.SmoothShading,
+		shading: config.sphereShading,
 		map: texture
 	});
 
 	return new THREE.Mesh(geometry, material);
 }
 
-export function loadTextureAsync(texturePath, callback) {
-	THREE.ImageUtils.loadTexture(texturePath, undefined, function(texture) {
-		texture.anisotropy = 1;
-		texture.minFilter = THREE.LinearFilter;
+export function loadTexture(texturePath) {
+	var texture = THREE.ImageUtils.loadTexture(texturePath);
+	texture.anisotropy = config.anisotropy;
+	texture.minFilter = config.minFilter;
 
-		callback(texture);
-	});
+	return texture;
 }
 
 export function createCamera(options) {

@@ -1,0 +1,30 @@
+<div class="options-3d">
+	<div class="options-3d-window {{showOptions ? '' : 'hidden'}}">
+		<div class="options-3d-header">
+			<a href="#" class="close" on-click="set('showOptions', false)">&times;</a>
+			<div class="actions">
+				<a class="reset" href="#" onclick="confirm('Are you sure?')">Reset</a>
+			</div>
+			<h1>
+				<span class="text-3d">Balls 3D</span> Options
+			</h1>
+		</div>
+
+		<div class="options-3d-content">
+			<div class="texture-input-wrapper">
+				Blue textures
+
+				<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />
+			</div>
+
+			<div class="texture-input-wrapper">
+				Red textures
+				<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />
+			</div>
+		</div>
+	</div>
+
+	<a href="#" on-click="toggle('showOptions')" class="options-3d-button text-3d {{mouseMoved ? '' : 'invisible'}}">
+		3D
+	</a>
+</div>

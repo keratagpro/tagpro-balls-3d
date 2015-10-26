@@ -1,77 +1,31 @@
-import THREE from 'three';
-import PIXI from 'pixi.js';
+import $ from 'jquery';
+import Ractive from 'ractive';
 
-import { before, after } from './lib/hooks';
-import * as PlayerUtils from './lib/player_utils';
-import * as ThreeUtils from './lib/three_utils';
+import { before, after, injectCSS } from './lib/utils';
+import TextureCanvas from './lib/texture_canvas';
+import Options from './components/options';
 
-import ObjectGrid from './lib/object_grid';
-
-THREE.ImageUtils.crossOrigin = '';
-
-const GRID_COLS = 10;
-const GRID_ROWS = 10;
-const TILE_SIZE = 40;
-
-const CANVAS_WIDTH = GRID_COLS * TILE_SIZE;
-const CANVAS_HEIGHT = GRID_ROWS * TILE_SIZE;
-
-var scene = new THREE.Scene();
-ThreeUtils.addLightsToScene(scene);
-
-var grid = new ObjectGrid({
-	cols: GRID_COLS,
-	rows: GRID_ROWS,
-	cellSize: TILE_SIZE
-});
-
-scene.add(grid);
-
-var renderer = ThreeUtils.createRenderer();
-renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
-
-// For debugging
-document.body.appendChild(renderer.domElement);
-
-var camera = ThreeUtils.createCamera({
-	width: grid.width,
-	height: grid.height
-});
-
-var baseTexture = new PIXI.BaseTexture(renderer.domElement);
-
-function render() {
-	renderer.render(scene, camera);
-}
+injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css');
 
 tagpro.ready(function() {
+	var texture = new TextureCanvas();
+
 	var tr = tagpro.renderer;
 
+	before(tr, 'render', function() {
+		texture.render();
+	});
+
 	after(tr, 'createBallSprite', function(player) {
-		player.lastAngle = player.angle; // initialize lastAngle
-
-		PlayerUtils.createSphereAsync(player, function(sphere) {
-			player.sphere = sphere;
-
-			var rect = grid.add(sphere);
-
-			PlayerUtils.setSprite(player, baseTexture, rect);
-
-			baseTexture.dirty();
-		});
+		texture.addPlayer(player);
 	});
 
 	after(tr, 'destroyPlayer', function(player) {
-		grid.remove(player.sphere);
-		delete player.sphere;
+		texture.removePlayer(player);
 	});
 
 	after(tr, 'updatePlayerSpritePosition', function(player) {
-		PlayerUtils.rotateSphere(player);
-
-		player.lastAngle = player.angle;
-
-		baseTexture.dirty();
+		texture.updatePosition(player);
 	});
 
 	// Replace original tagpro.renderer.updatePlayerColor
@@ -80,10 +34,17 @@ tagpro.ready(function() {
 		var tileId = color + 'ball';
 
 		if (player.sprites.actualBall.tileId !== tileId) {
-			PlayerUtils.updateTexture(player);
+			texture.updateTexture(player);
 			player.sprites.actualBall.tileId = tileId;
 		}
 	};
 
-	before(tr, 'render', render);
+	var elem = $('<div id="balls3d-options"></div>').appendTo(document.body);
+	var ractive = new Ractive({
+		el: elem,
+		template: '<Options />',
+		components: {
+			Options
+		}
+	});
 });
