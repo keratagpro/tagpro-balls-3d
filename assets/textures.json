@@ -1,0 +1,177 @@
+[
+	{
+		"name": "blue-marble",
+		"tag": "materials",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/blue-marble.jpg"
+	},
+	{
+		"name": "smiley",
+		"tag": "materials",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/smiley.png"
+	},
+	{
+		"name": "wood-2",
+		"tag": "materials",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/wood-2.png"
+	},
+	{
+		"name": "wood",
+		"tag": "materials",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/wood.png"
+	},
+	{
+		"name": "earth",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/earth.jpg"
+	},
+	{
+		"name": "jupiter",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/jupiter.jpg"
+	},
+	{
+		"name": "mars",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/mars.jpg"
+	},
+	{
+		"name": "neptune",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/neptune.jpg"
+	},
+	{
+		"name": "pluto",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/pluto.jpg"
+	},
+	{
+		"name": "venus",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/venus.jpg"
+	},
+	{
+		"name": "ball-01",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-01.jpg"
+	},
+	{
+		"name": "ball-02",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-02.jpg"
+	},
+	{
+		"name": "ball-03",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-03.jpg"
+	},
+	{
+		"name": "ball-04",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-04.jpg"
+	},
+	{
+		"name": "ball-05",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-05.jpg"
+	},
+	{
+		"name": "ball-06",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-06.jpg"
+	},
+	{
+		"name": "ball-07",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-07.jpg"
+	},
+	{
+		"name": "ball-08",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-08.jpg"
+	},
+	{
+		"name": "ball-09",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-09.jpg"
+	},
+	{
+		"name": "ball-10",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-10.jpg"
+	},
+	{
+		"name": "ball-11",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-11.jpg"
+	},
+	{
+		"name": "ball-12",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-12.jpg"
+	},
+	{
+		"name": "ball-13",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-13.jpg"
+	},
+	{
+		"name": "ball-14",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-14.jpg"
+	},
+	{
+		"name": "ball-15",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/ball-15.jpg"
+	},
+	{
+		"name": "white",
+		"tag": "pool",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/pool/white.jpg"
+	},
+	{
+		"name": "basket-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/basket-ball.jpg"
+	},
+	{
+		"name": "beach-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/beach-ball.jpg"
+	},
+	{
+		"name": "bowling-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/bowling-ball.png"
+	},
+	{
+		"name": "golf-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/golf-ball.jpg"
+	},
+	{
+		"name": "soccer-ball-2",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/soccer-ball-2.jpg"
+	},
+	{
+		"name": "soccer-ball-3",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/soccer-ball-3.jpg"
+	},
+	{
+		"name": "soccer-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/soccer-ball.jpg"
+	},
+	{
+		"name": "soft-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/soft-ball.jpg"
+	},
+	{
+		"name": "tennis-ball",
+		"tag": "sports",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/tennis-ball.jpg"
+	}
+]
