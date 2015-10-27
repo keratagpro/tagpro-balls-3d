@@ -14,10 +14,3 @@ export function after(obj, methodName, callback) {
 		return result;
 	};
 }
-
-export function injectCSS(src) {
-	var link = document.createElement('link');
-	link.rel = 'stylesheet';
-	link.src = src;
-	(document.head || document.body).appendChild(link);
-}

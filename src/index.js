@@ -1,13 +1,12 @@
 import $ from 'jquery';
 import Ractive from 'ractive';
 
-import { before, after, injectCSS } from './lib/utils';
+import { before, after } from './lib/hooks';
+import { initSelectize } from './lib/selectize_utils';
 import TextureCanvas from './lib/texture_canvas';
 import Options from './components/options';
 
-injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css');
-
-tagpro.ready(function() {
+function init() {
 	var texture = new TextureCanvas();
 
 	var tr = tagpro.renderer;
@@ -47,4 +46,10 @@ tagpro.ready(function() {
 			Options
 		}
 	});
+
+	tagpro.ractive = ractive;
+}
+
+initSelectize().then(function() {
+	tagpro.ready(init);
 });

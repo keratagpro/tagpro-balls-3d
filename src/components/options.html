@@ -3,25 +3,101 @@
 		<div class="options-3d-header">
 			<a href="#" class="close" on-click="set('showOptions', false)">&times;</a>
 			<div class="actions">
-				<a class="reset" href="#" onclick="confirm('Are you sure?')">Reset</a>
+				<a class="reset" href="#" on-click="reset-options">Reset</a>
 			</div>
 			<h1>
 				<span class="text-3d">Balls 3D</span> Options
 			</h1>
 		</div>
 
+		{{#with options}}
 		<div class="options-3d-content">
-			<div class="texture-input-wrapper">
+			<label class="texture-input-wrapper">
 				Blue textures
 
 				<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />
-			</div>
+			</label>
 
-			<div class="texture-input-wrapper">
+			<label class="texture-input-wrapper">
 				Red textures
 				<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />
-			</div>
+			</label>
+
+			<a href="#" on-click="toggle('showAdvanced')">Advanced options</a>
+
+			{{#if showAdvanced}}
+			<fieldset>
+				<label>
+					Velocity coefficient
+					<input type="range" min="0" max="3" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
+				</label>
+
+				<label>
+					Rotation coefficient
+					<input type="range" min="0" max="3" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
+				</label>
+
+				<label>
+					Ambient light color
+					<input type="color" value="{{ambientLightColorHex}}">
+				</label>
+
+				<label>
+					Light color
+					<input type="color" value="{{lightColorHex}}">
+				</label>
+
+				<label>
+					Light position
+					<input type="text" value="{{lightPositionString}}">
+				</label>
+
+				<label>
+					Light intensity
+					<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}
+				</label>
+
+				<label>
+					Texture.anisotropy
+					<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}
+				</label>
+
+				<label>
+					Texture.minFilter
+					<select value="{{minFilter}}">
+						{{#each textureFilters}}
+							<option value="{{value}}">{{label}}</option>
+						{{/each}}
+					</select>
+				</label>
+
+				<label>
+					Sphere radius
+					<input type="range" min="1" max="30" step="0.1" value="{{sphereRadius}}"> {{sphereRadius}}
+				</label>
+
+				<label>
+					Sphere width segments
+					<input type="range" min="3" max="100" value="{{sphereWidthSegments}}"> {{sphereWidthSegments}}
+				</label>
+
+				<label>
+					Sphere height segments
+					<input type="range" min="2" max="100" value="{{sphereHeightSegments}}"> {{sphereHeightSegments}}
+				</label>
+
+				<label>
+					Sphere shading
+					<select value="{{sphereShading}}">
+						{{#each materialShadings}}
+							<option value="{{value}}">{{label}}</option>
+						{{/each}}
+					</select>
+				</label>
+			</fieldset>
+			{{/if}}
 		</div>
+		{{/with}}
 	</div>
 
 	<a href="#" on-click="toggle('showOptions')" class="options-3d-button text-3d {{mouseMoved ? '' : 'invisible'}}">

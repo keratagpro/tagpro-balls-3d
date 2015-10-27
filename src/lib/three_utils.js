@@ -1,9 +1,9 @@
-import $ from 'jquery';
 import THREE from 'three';
 
 import config from './config';
 
-THREE.ImageUtils.crossOrigin = '';
+var loader = new THREE.TextureLoader();
+loader.setCrossOrigin('');
 
 var rotWorldMatrix;
 var vecY = new THREE.Vector3(1, 0, 0);
@@ -31,23 +31,19 @@ export function createSphereMesh(texture) {
 	return new THREE.Mesh(geometry, material);
 }
 
-export function loadTexture(texturePath) {
-	var texture = THREE.ImageUtils.loadTexture(texturePath);
-	texture.anisotropy = config.anisotropy;
-	texture.minFilter = config.minFilter;
+export function loadTextureAsync(texturePath, callback) {
+	loader.load(texturePath, function(texture) {
+		texture.anisotropy = config.anisotropy;
+		texture.minFilter = config.minFilter;
 
-	return texture;
+		callback(texture);
+	});
 }
 
 export function createCamera(options) {
-	options = $.extend({
-		width: 400,
-		height: 400
-	}, options);
-
 	var camera = new THREE.OrthographicCamera(
-		-options.width/2, options.width/2,
-		-options.height/2, options.height/2,
+		-options.width / 2, options.width / 2,
+		-options.height / 2, options.height / 2,
 		1, 1000);
 
 	camera.position.z = 900;

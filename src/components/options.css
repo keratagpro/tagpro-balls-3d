@@ -1,3 +1,9 @@
+#balls-3d-assets {
+	position: absolute;
+	visibility: hidden;
+	z-index: -1;
+}
+
 .options-3d {
 	position: absolute;
 	bottom: 10px;
@@ -14,7 +20,8 @@
 }
 
 .options-3d-window {
-	background-color: white;
+	background-color: #fff;
+	color: #000;
 	width: 500px;
 	border-radius: 3px;
 	border: 2px solid #333;
@@ -57,17 +64,36 @@
 	.options-3d h3 {
 		margin: 0;
 		padding: 0;
+
+		/* override tagpro styles */
+		background: none;
+		width: auto;
+		height: auto;
 	}
 
 	.options-3d h1 { font-size: 26px; }
 	.options-3d h2 { font-size: 14px; }
 	.options-3d h3 { font-size: 12px; }
 
+	.options-3d h1 > span,
+	.options-3d h2 > span,
+	.options-3d h3 > span {
+		display: inline;
+	}
+
 .options-3d-content {
 	padding: 5px 10px;
 	max-height: 500px;
 	overflow: auto;
 }
+
+	.options-3d-content label {
+		display: block;
+	}
+
+	.options-3d-content a {
+		color: black;
+	}
 
 .options-3d .texture {
 	display: inline-block;

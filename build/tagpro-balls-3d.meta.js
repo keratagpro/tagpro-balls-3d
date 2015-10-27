@@ -11,6 +11,4 @@
 // @include       http://*.newcompte.fr:*
 // @require       https://cdnjs.cloudflare.com/ajax/libs/ractive/0.7.3/ractive.min.js
 // @require       https://cdnjs.cloudflare.com/ajax/libs/three.js/r72/three.min.js
-// @require       https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js
-// @resource      options https://keratagpro.github.io/tagpro-balls-3d/options.html#v0.3.4
 // ==/UserScript==

@@ -1,8 +1,11 @@
+import $ from 'jquery';
 import THREE from 'three';
 
-const rootUrl = 'https://keratagpro.github.io/tagpro-balls-3d';
+import Storage from './storage';
 
-var defaults = {
+const rootUrl = 'http://keratagpro.github.io/tagpro-balls-3d';
+
+export var defaults = {
 	texturesRed: [`${rootUrl}/textures/planets/mars.jpg`],
 	texturesBlue: [`${rootUrl}/textures/planets/earth.jpg`],
 	velocityCoefficient: 0.1,
@@ -19,4 +22,4 @@ var defaults = {
 	sphereShading: THREE.SmoothShading
 };
 
-export default defaults;
+export default $.extend(true, {}, defaults, Storage.all());

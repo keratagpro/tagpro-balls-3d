@@ -1,32 +1,76 @@
 import $ from 'jquery';
 import Ractive from 'ractive';
+import THREE from 'three';
 
-import config from '../lib/config';
+import { createSelectize } from '../lib/selectize_utils';
+import config, { defaults } from '../lib/config';
+import Storage from '../lib/storage';
 
 const TEXTURES_URL = 'http://keratagpro.github.io/tagpro-balls-3d/textures.json';
 
 export default Ractive.extend({
 	data: {
-		showOptions: true,
-		options: config
+		showOptions: false,
+		options: config,
+		textureFilters: [
+			{ label: "Nearest", value: THREE.NearestFilter },
+			{ label: "NearestMipMapNearest", value: THREE.NearestMipMapNearestFilter },
+			{ label: "NearestMipMapLinear", value: THREE.NearestMipMapLinearFilter },
+			{ label: "Linear", value: THREE.LinearFilter },
+			{ label: "LinearMipMapNearest", value: THREE.LinearMipMapNearestFilter },
+			{ label: "LinearMipMapLinear", value: THREE.LinearMipMapLinearFilter }
+		],
+		materialShadings: [
+			{ label: "Flat", value: THREE.FlatShading },
+			{ label: "Smooth", value: THREE.SmoothShading }
+		]
 	},
 	template: `OPTIONS_HTML`,
 	css: `OPTIONS_CSS`,
+	noCssTransform: true,
 	computed: {
 		blueTexturesString: {
-			get: '${options.blueTextures}.join(",")',
+			get: '${options.texturesBlue}.join(",")',
 			set: function(val) {
-				this.set('options.blueTextures', val.split(','));
+				this.set('options.texturesBlue', val.split(','));
 			}
 		},
 		redTexturesString: {
-			get: '${options.redTextures}.join(",")',
+			get: '${options.texturesRed}.join(",")',
 			set: function(val) {
-				this.set('options.redTextures', val.split(','));
+				this.set('options.texturesRed', val.split(','));
+			}
+		},
+		lightPositionString: {
+			get: '${options.lightPosition}.join(",")',
+			set: function(val) {
+				this.set('options.lightPosition', val.split(',').map(v => parseInt(v, 10)));
+			}
+		},
+		ambientLightColorHex: {
+			get: function() {
+				var val = this.get('options.ambientLightColor');
+				var color = new THREE.Color(val);
+				return '#' + color.getHexString();
+			},
+			set: function(val) {
+				var color = new THREE.Color(val);
+				this.set('options.ambientLightColor', color.getHex());
+			}
+		},
+		lightColorHex: {
+			get: function() {
+				var val = this.get('options.lightColor');
+				var color = new THREE.Color(val);
+				return '#' + color.getHexString();
+			},
+			set: function(val) {
+				var color = new THREE.Color(val);
+				this.set('options.lightColor', color.getHex());
 			}
 		}
 	},
-	onrender: function() {
+	oninit: function() {
 		var mouseMoveTimeout;
 		var self = this;
 		$(window).on('mousemove', function(ev) {
@@ -41,69 +85,25 @@ export default Ractive.extend({
 			}, 1000);
 		});
 
-		$.getJSON(TEXTURES_URL).done(createSelectize);
+		this.observe('options.*', function(val, oldVal, keypath) {
+			var key = keypath.replace('options.', '');
+
+			if (val === defaults[key]) {
+				Storage.removeItem(key);
+			}
+			else {
+				Storage.setItem(key, val);
+			}
+		}, { init: false });
+
+		this.on('reset-options', function() {
+			Storage.clear();
+			this.set('options', defaults);
+		});
+	},
+	onrender: function() {
+		$.getJSON(TEXTURES_URL).done(textures => {
+			createSelectize(textures, this);
+		});
 	}
 });
-
-function createSelectize(textures) {
-	var optgroups = textures.reduce(function(mem, val) {
-		if (mem.indexOf(val.group) < 0) {
-			mem.push(val.group);
-		}
-
-		return mem;
-	}, []).map(function(val) {
-		return {
-			group: val
-		};
-	});
-
-	var selectize = $('.texture-select').selectize({
-		plugins: ['remove_button', 'optgroup_columns', {
-			name: 'restore_on_backspace',
-			options: {
-				text: function(option) {
-					return option[this.settings.valueField];
-				}
-			}
-		}],
-		persist: false,
-		hideSelected: false,
-		options: textures,
-		labelField: 'name',
-		valueField: 'path',
-		searchField: ['name', 'path'],
-		create: function(input) {
-			var idx = input.lastIndexOf('/');
-			if (idx < 0) {
-				return false;
-			}
-
-			var name = input.substring(input.lastIndexOf('/') + 1);
-			return {
-				name: name,
-				text: input,
-				path: input
-			};
-		},
-		optgroups: optgroups,
-		optgroupValueField: 'group',
-		optgroupLabelField: 'group',
-		optgroupField: 'group',
-		dropdownDirection: 'up',
-		render: {
-			item: function(item, escape) {
-				return '<div>' +
-					'<img class="option-item-image" src="' + item.path + '" />' +
-					(item.name ? '<span class="name">' + escape(item.name) + '</span>' : '') +
-				'</div>';
-			},
-			option: function(item, escape) {
-				return '<div>' +
-					'<img class="option-image" src="' + item.path + '" />' +
-					(item.name ? '<span class="option-label">' + escape(item.name) + '</span>' : '') +
-				'</div>';
-			}
-		}
-	});
-}

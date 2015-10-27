@@ -21,6 +21,7 @@
     "globals": {
         "tagpro": true,
         "OPTIONS_HTML": true,
-        "OPTIONS_CSS": true
+        "OPTIONS_CSS": true,
+        "Selectize": true
     }
 }
