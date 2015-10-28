@@ -6,8 +6,6 @@ import * as ThreeUtils from '../lib/three_utils';
 export default Ractive.extend({
 	template: '<canvas class="options-3d-preview-ball"></canvas>',
 	onrender: function() {
-		var texture = this.get('texture');
-
 		var width = tagpro.TILE_SIZE;
 		var height = tagpro.TILE_SIZE;
 
@@ -28,7 +26,13 @@ export default Ractive.extend({
 		var loader = new THREE.TextureLoader();
 		loader.setCrossOrigin('');
 
-		loader.load(this.get('texture'), (texture) => {
+		var texture = this.get('texture');
+
+		if (this.get('options.useCorsProxy')) {
+			texture = this.get('options.corsProxy') + texture;
+		}
+
+		loader.load(texture, texture => {
 			texture.anisotropy = this.get('options.anisotropy');
 			texture.minFilter = this.get('options.minFilter');
 			texture.needsUpdate = true;
@@ -45,7 +49,11 @@ export default Ractive.extend({
 			});
 
 			this.observe('texture', function(val) {
-				loader.load(val, (texture) => {
+				if (this.get('options.useCorsProxy')) {
+					val = this.get('options.corsProxy') + val;
+				}
+
+				loader.load(val, texture => {
 					material.map = texture;
 					material.needsUpdate = true;
 				});
@@ -55,12 +63,14 @@ export default Ractive.extend({
 			sphere.position.x = width / 2;
 			sphere.position.y = height / 2;
 
+			ThreeUtils.rotateZ(sphere, Math.PI);
+
 			scene.add(sphere);
 
 			function render() {
 				ThreeUtils.rotateX(sphere, 0.02);
 				ThreeUtils.rotateY(sphere, 0.02);
-				ThreeUtils.rotateZ(sphere, 0.05);
+				ThreeUtils.rotateZ(sphere, 0.02);
 
 				renderer.render(scene, camera);
 				window.requestAnimationFrame(render);

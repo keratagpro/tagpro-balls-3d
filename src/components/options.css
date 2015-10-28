@@ -2,6 +2,10 @@
 	display: flex;
 }
 
+.options-3d-muted {
+	color: #aaa;
+}
+
 .options-3d-preview-red,
 .options-3d-preview-blue {
 	flex: 1;

@@ -171,6 +171,10 @@ export default class TextureCanvas {
 			this.textureIndexBlue += 1;
 		}
 
+		if (this.config.useCorsProxy) {
+			texture = this.config.corsProxy + texture;
+		}
+
 		return texture;
 	}
 

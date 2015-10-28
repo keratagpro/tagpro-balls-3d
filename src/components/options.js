@@ -2,7 +2,7 @@ import $ from 'jquery';
 import Ractive from 'ractive';
 import THREE from 'three';
 
-import { createSelectize } from '../lib/selectize_utils';
+import { createSelectizes } from '../lib/selectize_utils';
 import config, { defaults } from '../lib/config';
 import Storage from '../lib/storage';
 import Preview from './preview';
@@ -88,7 +88,7 @@ export default Ractive.extend({
 	},
 	onrender: function() {
 		$.getJSON(TEXTURES_URL).done(textures => {
-			createSelectize(textures, this);
+			createSelectizes(textures, this);
 		});
 	},
 	components: {

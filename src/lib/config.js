@@ -20,7 +20,9 @@ export var defaults = {
 	sphereRadius: 19,
 	sphereWidthSegments: 16,
 	sphereHeightSegments: 12,
-	sphereShading: THREE.SmoothShading
+	sphereShading: THREE.SmoothShading,
+	useCorsProxy: true,
+	corsProxy: 'https://crossorigin.me/'
 };
 
 export default $.extend(true, {}, defaults, Storage.all());

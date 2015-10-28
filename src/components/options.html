@@ -42,8 +42,15 @@
 
 		{{#if showAdvanced}}
 			<label>
+				<span>Enable remote textures</span>
+				<input type="checkbox" checked="{{useCorsProxy}}">
+				<small class="options-3d-muted">(Proxies all textures through crossorigin.me)</small>
+			</label>
+
+			<label>
 				<span>Random texture order</span>
 				<input type="checkbox" checked="{{randomOrder}}">
+				<small class="options-3d-muted">(Apply selected textures randomly instead of sequentially)</small>
 			</label>
 
 			<label>

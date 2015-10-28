@@ -6,9 +6,6 @@ import fs from 'fs';
 
 import { version } from '../package.json';
 
-var banner = 'tagpro.ready(function() {';
-var footer = '});';
-
 export default function build() {
 	var optionsHtml = fs.readFileSync('./src/components/options.html', 'utf8');
 	var optionsCss = fs.readFileSync('./src/components/options.css', 'utf8');
@@ -28,8 +25,7 @@ export default function build() {
 
 		return bundle.write({
 			format: 'iife',
-			banner: meta({ version }) + banner,
-			footer: footer,
+			banner: meta({ version }),
 			globals: {
 				'pixi.js': 'this.PIXI || {}' // HACK: PIXI not available outside game.
 			},

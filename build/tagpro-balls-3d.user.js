@@ -18,7 +18,7 @@
 // @require       https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.min.js
 // ==/UserScript==
 
-tagpro.ready(function() {
+
 (function ($,Ractive,THREE,PIXI) { 'use strict';
 
 	$ = 'default' in $ ? $['default'] : $;
@@ -51,93 +51,6 @@ tagpro.ready(function() {
 	    throw new TypeError("Cannot call a class as a function");
 	  }
 	};
-	function injectCSS(src) {
-		var link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = src;
-		(document.head || document.body).appendChild(link);
-	}
-
-	function injectScript(src) {
-		var script = document.createElement('script');
-		script.type = 'text/javascript';
-		script.src = src;
-		document.body.appendChild(script);
-	}
-
-	function initSelectize() {
-		injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.legacy.min.css');
-		injectScript('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js');
-
-		return new Promise(function (resolve, reject) {
-			(function checkSelectize() {
-				if (typeof Selectize !== 'undefined') {
-					resolve();
-				} else {
-					setTimeout(checkSelectize, 500);
-				}
-			})();
-		});
-	}
-
-	function createSelectize(textures, ractive) {
-		var optgroups = textures.reduce(function (tags, val) {
-			if (tags.indexOf(val.tag) < 0) {
-				tags.push(val.tag);
-			}
-
-			return tags;
-		}, []).map(function (tag) {
-			return { tag: tag };
-		});
-
-		var selectize = $('.texture-select').selectize({
-			plugins: ['remove_button', 'optgroup_columns', {
-				name: 'restore_on_backspace',
-				options: {
-					text: function text(option) {
-						return option[this.settings.valueField];
-					}
-				}
-			}],
-			persist: false,
-			hideSelected: false,
-			options: textures,
-			labelField: 'name',
-			valueField: 'path',
-			searchField: ['name', 'path'],
-			create: function create(input) {
-				var idx = input.lastIndexOf('/');
-				if (idx < 0) {
-					return false;
-				}
-
-				var name = input.substring(input.lastIndexOf('/') + 1);
-				return {
-					name: name,
-					text: input,
-					path: input
-				};
-			},
-			optgroups: optgroups,
-			optgroupValueField: 'tag',
-			optgroupLabelField: 'tag',
-			optgroupField: 'tag',
-			dropdownDirection: 'up',
-			render: {
-				item: function item(_item, escape) {
-					return '<div>' + '<img class="option-item-image" src="' + _item.path + '" />' + (_item.name ? '<span class="name">' + escape(_item.name) + '</span>' : '') + '</div>';
-				},
-				option: function option(item, escape) {
-					return '<div>' + '<div class="option-thumbnail"><img src="' + item.path + '" /></div>' + (item.name ? '<span class="option-label">' + escape(item.name) + '</span>' : '') + '</div>';
-				}
-			},
-			onChange: function onChange(val) {
-				ractive.updateModel();
-			}
-		});
-	}
-
 	function before(obj, methodName, callback) {
 		var orig = obj[methodName];
 		obj[methodName] = function () {
@@ -218,7 +131,9 @@ tagpro.ready(function() {
 		sphereRadius: 19,
 		sphereWidthSegments: 16,
 		sphereHeightSegments: 12,
-		sphereShading: THREE.SmoothShading
+		sphereShading: THREE.SmoothShading,
+		useCorsProxy: true,
+		corsProxy: 'https://crossorigin.me/'
 	};
 
 	var config = $.extend(true, {}, defaults, Storage.all());
@@ -529,6 +444,10 @@ tagpro.ready(function() {
 					this.textureIndexBlue += 1;
 				}
 
+				if (this.config.useCorsProxy) {
+					texture = this.config.corsProxy + texture;
+				}
+
 				return texture;
 			}
 		}, {
@@ -593,12 +512,111 @@ tagpro.ready(function() {
 		};
 	}
 
+	function injectCSS(src) {
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = src;
+		(document.head || document.body).appendChild(link);
+	}
+
+	function injectScript(src) {
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = src;
+		document.body.appendChild(script);
+	}
+
+	function initSelectize() {
+		injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.legacy.min.css');
+		injectScript('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js');
+
+		return new Promise(function (resolve, reject) {
+			(function checkSelectize() {
+				if (typeof Selectize !== 'undefined') {
+					resolve();
+				} else {
+					setTimeout(checkSelectize, 500);
+				}
+			})();
+		});
+	}
+
+	function createSelectizes(textures, ractive) {
+		$('.texture-select').each(function () {
+			var values = this.value.split(',');
+			values = values.map(createOption);
+
+			textures = textures.concat(values);
+
+			createSelectize(this, textures, ractive);
+		});
+	}
+
+	function createOption(text) {
+		var idx = text.lastIndexOf('/');
+		if (idx < 0) {
+			return false;
+		}
+
+		var name = text.substring(text.lastIndexOf('/') + 1);
+		return {
+			name: name,
+			text: text,
+			path: text
+		};
+	}
+
+	function createSelectize(elem, textures, ractive) {
+		var optgroups = textures.reduce(function (tags, val) {
+			if (tags.indexOf(val.tag) < 0) {
+				tags.push(val.tag);
+			}
+
+			return tags;
+		}, []).map(function (tag) {
+			return { tag: tag };
+		});
+
+		var selectize = $(elem).selectize({
+			plugins: ['remove_button', 'optgroup_columns', {
+				name: 'restore_on_backspace',
+				options: {
+					text: function text(option) {
+						return option[this.settings.valueField];
+					}
+				}
+			}],
+			copyClassesToDropdown: false,
+			persist: false,
+			hideSelected: false,
+			options: textures,
+			labelField: 'name',
+			valueField: 'path',
+			searchField: ['name', 'path'],
+			create: createOption,
+			optgroups: optgroups,
+			optgroupValueField: 'tag',
+			optgroupLabelField: 'tag',
+			optgroupField: 'tag',
+			dropdownDirection: 'up',
+			render: {
+				item: function item(_item, escape) {
+					return '<div>' + '<img class="option-item-image" src="' + _item.path + '" />' + (_item.name ? '<span class="name">' + escape(_item.name) + '</span>' : '') + '</div>';
+				},
+				option: function option(item, escape) {
+					return '<div>' + '<div class="option-thumbnail"><img src="' + item.path + '" /></div>' + (item.name ? '<span class="option-label">' + escape(item.name) + '</span>' : '') + '</div>';
+				}
+			},
+			onChange: function onChange(val) {
+				ractive.updateModel();
+			}
+		});
+	}
+
 	var Preview = Ractive.extend({
 		template: '<canvas class="options-3d-preview-ball"></canvas>',
 		onrender: function onrender() {
 			var _this = this;
-
-			var texture = this.get('texture');
 
 			var width = tagpro.TILE_SIZE;
 			var height = tagpro.TILE_SIZE;
@@ -620,7 +638,13 @@ tagpro.ready(function() {
 			var loader = new THREE.TextureLoader();
 			loader.setCrossOrigin('');
 
-			loader.load(this.get('texture'), function (texture) {
+			var texture = this.get('texture');
+
+			if (this.get('options.useCorsProxy')) {
+				texture = this.get('options.corsProxy') + texture;
+			}
+
+			loader.load(texture, function (texture) {
 				texture.anisotropy = _this.get('options.anisotropy');
 				texture.minFilter = _this.get('options.minFilter');
 				texture.needsUpdate = true;
@@ -633,6 +657,10 @@ tagpro.ready(function() {
 				});
 
 				_this.observe('texture', function (val) {
+					if (this.get('options.useCorsProxy')) {
+						val = this.get('options.corsProxy') + val;
+					}
+
 					loader.load(val, function (texture) {
 						material.map = texture;
 						material.needsUpdate = true;
@@ -648,7 +676,7 @@ tagpro.ready(function() {
 				function render() {
 					rotateX(sphere, 0.02);
 					rotateY(sphere, 0.02);
-					rotateZ(sphere, 0.05);
+					rotateZ(sphere, 0.02);
 
 					renderer.render(scene, camera);
 					window.requestAnimationFrame(render);
@@ -668,8 +696,8 @@ tagpro.ready(function() {
 			textureFilters: [{ label: 'Nearest', value: THREE.NearestFilter }, { label: 'NearestMipMapNearest', value: THREE.NearestMipMapNearestFilter }, { label: 'NearestMipMapLinear', value: THREE.NearestMipMapLinearFilter }, { label: 'Linear', value: THREE.LinearFilter }, { label: 'LinearMipMapNearest', value: THREE.LinearMipMapNearestFilter }, { label: 'LinearMipMapLinear', value: THREE.LinearMipMapLinearFilter }],
 			materialShadings: [{ label: 'Flat', value: THREE.FlatShading }, { label: 'Smooth', value: THREE.SmoothShading }]
 		},
-		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label>\n\t\t\tRed textures\n\t\t\t<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\tBlue textures\n\t\t\t<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tAdvanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<label>\n\t\t\t\t<span>Random texture order</span>\n\t\t\t\t<input type="checkbox" checked="{{randomOrder}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Velocity coefficient</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Rotation coefficient</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Ambient light color</span>\n\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light color</span>\n\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light position</span>\n\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light intensity</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Texture.anisotropy</span>\n\t\t\t\t<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Texture.minFilter</span>\n\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t{{/each}}\n\t\t\t\t</select>\n\t\t\t</label>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
-		css: '.options-3d-preview {\n\tdisplay: flex;\n}\n\n.options-3d-preview-red,\n.options-3d-preview-blue {\n\tflex: 1;\n\ttext-align: center;\n\tpadding: 3px;\n}\n\n.options-3d-preview-red {\n\tbackground-color: rgba(255, 0, 0, 0.2);\n}\n\n.options-3d-preview-blue {\n\tbackground-color: rgba(0, 0, 255, 0.2);\n}\n\n.options-3d-preview-ball {\n\tvertical-align: middle;\n}\n\n.options-3d {\n\tmargin: 10px auto;\n\twidth: 570px;\n\tbackground-color: #eee;\n\tcolor: #000;\n\tborder-radius: 5px;\n\tborder: 2px solid #333;\n}\n\n\t.options-3d-header {\n\t\tborder-bottom: 1px solid #333;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-header .actions {\n\t\tfloat: right;\n\t\tpadding: 5px;\n\t\tmargin-right: 15px;\n\t}\n\n\t.options-3d-header .text-3d {\n\t\tposition: relative;\n\t\ttop: -3px;\n\t\tleft: -3px;\n\t}\n\n\t.options-3d-header .close {\n\t\tfloat: right;\n\t\ttext-decoration: none;\n\t\tcolor: #333;\n\t\tline-height: 20px;\n\t\tfont-size: 20px;\n\t\tpadding: 5px;\n\t}\n\n\t.options-3d h1,\n\t.options-3d h2,\n\t.options-3d h3 {\n\t\ttext-align: left;\n\t\tmargin: 0;\n\t\tpadding: 0;\n\n\t\t/* override tagpro styles */\n\t\tbackground: none;\n\t\twidth: auto;\n\t\theight: auto;\n\t}\n\n\t.options-3d h1 { font-size: 26px; }\n\t.options-3d h2 { font-size: 14px; }\n\t.options-3d h3 { font-size: 12px; }\n\n\t.options-3d h1 > span,\n\t.options-3d h2 > span,\n\t.options-3d h3 > span {\n\t\tdisplay: inline;\n\t}\n\n.options-3d-content {\n\tpadding: 5px 10px;\n\toverflow: auto;\n}\n\n\t.options-3d-content > label {\n\t\tpadding: 5px;\n\t\tdisplay: block;\n\t}\n\n\t.options-3d-content > label > span {\n\t\tdisplay: inline-block;\n\t\twidth: 180px;\n\t\ttext-align: right;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-content > label > input {\n\t\tvertical-align: middle;\n\t}\n\n\t.options-3d-content a {\n\t\tcolor: black;\n\t}\n\n.options-3d .texture {\n\tdisplay: inline-block;\n\twidth: 100px;\n\theight: 100px;\n\tmargin: 5px;\n}\n\n.options-3d .texture img {\n\twidth: 100%;\n\theight: 100%;\n}\n\n.options-3d .texture-input {\n\twidth: 100%;\n\tbox-sizing: border-box;\n}\n\n.option-thumbnail {\n\tposition: relative;\n\twidth: 50px;\n\theight: 50px;\n\toverflow: hidden;\n\tdisplay: inline-block;\n\tvertical-align: middle;\n\tmargin-right: 5px;\n}\n\n\t.option-thumbnail img {\n\t\tposition: absolute;\n\t\tleft: 50%;\n\t\ttop: 50%;\n\t\theight: 100%;\n\t\twidth: auto;\n\t\ttransform: translate(-50%, -50%);\n\t}\n\n.option-item-image {\n\twidth: 20px;\n\theight: 20px;\n\tvertical-align: middle;\n\tpadding-right: 5px;\n}\n\n.selectize-control {\n\tposition: static;\n}\n\n.selectize-dropdown [data-selectable] {\n\twhite-space: nowrap;\n\t/*display: inline-block;*/\n}',
+		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label>\n\t\t\tRed textures\n\t\t\t<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\tBlue textures\n\t\t\t<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tAdvanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<label>\n\t\t\t\t<span>Enable remote textures</span>\n\t\t\t\t<input type="checkbox" checked="{{useCorsProxy}}">\n\t\t\t\t<small class="options-3d-muted">(Proxies all textures through crossorigin.me)</small>\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Random texture order</span>\n\t\t\t\t<input type="checkbox" checked="{{randomOrder}}">\n\t\t\t\t<small class="options-3d-muted">(Apply selected textures randomly instead of sequentially)</small>\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Velocity coefficient</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Rotation coefficient</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Ambient light color</span>\n\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light color</span>\n\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light position</span>\n\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light intensity</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Texture.anisotropy</span>\n\t\t\t\t<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Texture.minFilter</span>\n\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t{{/each}}\n\t\t\t\t</select>\n\t\t\t</label>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
+		css: '.options-3d-preview {\n\tdisplay: flex;\n}\n\n.options-3d-muted {\n\tcolor: #aaa;\n}\n\n.options-3d-preview-red,\n.options-3d-preview-blue {\n\tflex: 1;\n\ttext-align: center;\n\tpadding: 3px;\n}\n\n.options-3d-preview-red {\n\tbackground-color: rgba(255, 0, 0, 0.2);\n}\n\n.options-3d-preview-blue {\n\tbackground-color: rgba(0, 0, 255, 0.2);\n}\n\n.options-3d-preview-ball {\n\tvertical-align: middle;\n}\n\n.options-3d {\n\tmargin: 10px auto;\n\twidth: 570px;\n\tbackground-color: #eee;\n\tcolor: #000;\n\tborder-radius: 5px;\n\tborder: 2px solid #333;\n}\n\n\t.options-3d-header {\n\t\tborder-bottom: 1px solid #333;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-header .actions {\n\t\tfloat: right;\n\t\tpadding: 5px;\n\t\tmargin-right: 15px;\n\t}\n\n\t.options-3d-header .text-3d {\n\t\tposition: relative;\n\t\ttop: -3px;\n\t\tleft: -3px;\n\t}\n\n\t.options-3d-header .close {\n\t\tfloat: right;\n\t\ttext-decoration: none;\n\t\tcolor: #333;\n\t\tline-height: 20px;\n\t\tfont-size: 20px;\n\t\tpadding: 5px;\n\t}\n\n\t.options-3d h1,\n\t.options-3d h2,\n\t.options-3d h3 {\n\t\ttext-align: left;\n\t\tmargin: 0;\n\t\tpadding: 0;\n\n\t\t/* override tagpro styles */\n\t\tbackground: none;\n\t\twidth: auto;\n\t\theight: auto;\n\t}\n\n\t.options-3d h1 { font-size: 26px; }\n\t.options-3d h2 { font-size: 14px; }\n\t.options-3d h3 { font-size: 12px; }\n\n\t.options-3d h1 > span,\n\t.options-3d h2 > span,\n\t.options-3d h3 > span {\n\t\tdisplay: inline;\n\t}\n\n.options-3d-content {\n\tpadding: 5px 10px;\n\toverflow: auto;\n}\n\n\t.options-3d-content > label {\n\t\tpadding: 5px;\n\t\tdisplay: block;\n\t}\n\n\t.options-3d-content > label > span {\n\t\tdisplay: inline-block;\n\t\twidth: 180px;\n\t\ttext-align: right;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-content > label > input {\n\t\tvertical-align: middle;\n\t}\n\n\t.options-3d-content a {\n\t\tcolor: black;\n\t}\n\n.options-3d .texture {\n\tdisplay: inline-block;\n\twidth: 100px;\n\theight: 100px;\n\tmargin: 5px;\n}\n\n.options-3d .texture img {\n\twidth: 100%;\n\theight: 100%;\n}\n\n.options-3d .texture-input {\n\twidth: 100%;\n\tbox-sizing: border-box;\n}\n\n.option-thumbnail {\n\tposition: relative;\n\twidth: 50px;\n\theight: 50px;\n\toverflow: hidden;\n\tdisplay: inline-block;\n\tvertical-align: middle;\n\tmargin-right: 5px;\n}\n\n\t.option-thumbnail img {\n\t\tposition: absolute;\n\t\tleft: 50%;\n\t\ttop: 50%;\n\t\theight: 100%;\n\t\twidth: auto;\n\t\ttransform: translate(-50%, -50%);\n\t}\n\n.option-item-image {\n\twidth: 20px;\n\theight: 20px;\n\tvertical-align: middle;\n\tpadding-right: 5px;\n}\n\n.selectize-control {\n\tposition: static;\n}\n\n.selectize-dropdown [data-selectable] {\n\twhite-space: nowrap;\n\t/*display: inline-block;*/\n}',
 		noCssTransform: true,
 		computed: {
 			blueTexturesString: {
@@ -735,7 +763,7 @@ tagpro.ready(function() {
 			var _this = this;
 
 			$.getJSON(TEXTURES_URL).done(function (textures) {
-				createSelectize(textures, _this);
+				createSelectizes(textures, _this);
 			});
 		},
 		components: {
@@ -778,44 +806,45 @@ tagpro.ready(function() {
 		t.animateStyle(targetStyle, params).then(t.complete);
 	}
 
-	// Check if is in game
-	if (tagpro.state > 0) {
-		inject3D();
-	} else if (location.pathname === '/') {
-		GM_addStyle('\n\t\tbody {\n\t\t\toverflow: visible;\n\t\t}\n\n\t\t.text-3d {\n\t\t\tcolor: #ACE600;\n\t\t\ttext-shadow: 1px 1px #608100, 2px 2px #608100, 3px 3px #608100;\n\t\t}\n\n\t\t.balls3d-button {\n\t\t\tmargin-left: 10px;\n\t\t\tmargin-right: 10px;\n\t\t}\n\n\t\t.balls3d-button.active {\n\t\t\ttext-decoration: underline;\n\t\t}\n\t');
+	tagpro.ready(function () {
+		// Check if is in game
+		if (tagpro.state > 0) {
+			inject3D();
+		} else if (location.pathname === '/') {
+			GM_addStyle('\n\t\t\tbody {\n\t\t\t\toverflow: visible;\n\t\t\t}\n\n\t\t\t.text-3d {\n\t\t\t\tcolor: #ACE600;\n\t\t\t\ttext-shadow: 1px 1px #608100, 2px 2px #608100, 3px 3px #608100;\n\t\t\t}\n\n\t\t\t.balls3d-button {\n\t\t\t\tmargin-left: 10px;\n\t\t\t\tmargin-right: 10px;\n\t\t\t}\n\n\t\t\t.balls3d-button.active {\n\t\t\t\ttext-decoration: underline;\n\t\t\t}\n\t\t');
 
-		initSelectize().then(function () {
-			var $existingLink = $('a:contains("Map Statistics")');
+			initSelectize().then(function () {
+				var $existingLink = $('a:contains("Map Statistics")');
 
-			var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
+				var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
 
-			tagpro.balls3d = new Ractive({
-				el: $elem,
-				data: {
-					showOptions: false
-				},
-				template: '{{#if showOptions}}<div intro-outro="slide"><Options /></div>{{/if}}',
-				components: {
-					Options: Options
-				},
-				oninit: function oninit() {
-					this.on('Options.close', function () {
-						this.set('showOptions', false);
-					});
-				},
-				transitions: {
-					slide: slide
-				}
+				tagpro.balls3d = new Ractive({
+					el: $elem,
+					data: {
+						showOptions: false
+					},
+					template: '{{#if showOptions}}<div intro-outro="slide"><Options /></div>{{/if}}',
+					components: {
+						Options: Options
+					},
+					oninit: function oninit() {
+						this.on('Options.close', function () {
+							this.set('showOptions', false);
+						});
+					},
+					transitions: {
+						slide: slide
+					}
+				});
+
+				var $a = $('<a href="#" class="balls3d-button">3D settings</a>').on('click', function () {
+					tagpro.balls3d.toggle('showOptions');
+					$(this).toggleClass('active', tagpro.balls3d.get('showOptions'));
+				});
+
+				$a.insertBefore($existingLink);
 			});
-
-			var $a = $('<a href="#" class="balls3d-button">3D settings</a>').on('click', function () {
-				tagpro.balls3d.toggle('showOptions');
-				$(this).toggleClass('active', tagpro.balls3d.get('showOptions'));
-			});
-
-			$a.insertBefore($existingLink);
-		});
-	}
+		}
+	});
 
 })($,Ractive,THREE,this.PIXI || {});
-});

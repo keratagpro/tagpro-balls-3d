@@ -17,7 +17,32 @@ export function initSelectize() {
 	});
 }
 
-export function createSelectize(textures, ractive) {
+export function createSelectizes(textures, ractive) {
+	$('.texture-select').each(function() {
+		var values = this.value.split(',');
+		values = values.map(createOption);
+
+		textures = textures.concat(values);
+
+		createSelectize(this, textures, ractive);
+	});
+}
+
+function createOption(text) {
+	var idx = text.lastIndexOf('/');
+	if (idx < 0) {
+		return false;
+	}
+
+	var name = text.substring(text.lastIndexOf('/') + 1);
+	return {
+		name: name,
+		text: text,
+		path: text
+	};
+}
+
+function createSelectize(elem, textures, ractive) {
 	var optgroups = textures.reduce(function(tags, val) {
 		if (tags.indexOf(val.tag) < 0) {
 			tags.push(val.tag);
@@ -28,7 +53,7 @@ export function createSelectize(textures, ractive) {
 		return { tag };
 	});
 
-	var selectize = $('.texture-select').selectize({
+	var selectize = $(elem).selectize({
 		plugins: ['remove_button', 'optgroup_columns', {
 			name: 'restore_on_backspace',
 			options: {
@@ -37,25 +62,14 @@ export function createSelectize(textures, ractive) {
 				}
 			}
 		}],
+		copyClassesToDropdown: false,
 		persist: false,
 		hideSelected: false,
 		options: textures,
 		labelField: 'name',
 		valueField: 'path',
 		searchField: ['name', 'path'],
-		create: function(input) {
-			var idx = input.lastIndexOf('/');
-			if (idx < 0) {
-				return false;
-			}
-
-			var name = input.substring(input.lastIndexOf('/') + 1);
-			return {
-				name: name,
-				text: input,
-				path: input
-			};
-		},
+		create: createOption,
 		optgroups: optgroups,
 		optgroupValueField: 'tag',
 		optgroupLabelField: 'tag',
