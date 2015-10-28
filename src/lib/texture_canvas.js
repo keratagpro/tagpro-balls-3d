@@ -3,29 +3,34 @@ import PIXI from 'pixi.js';
 
 import * as ThreeUtils from './three_utils';
 import Packer from './packer';
-import config, { defaults } from './config';
-
-THREE.ImageUtils.crossOrigin = '';
-
-var textureIndexRed = 0;
-var textureIndexBlue = 0;
-var tilePadding = 15;
 
 export default class TextureCanvas {
-	constructor(options) {
+	constructor(config) {
+		this.config = config;
+
 		this.metaMap = {};
 
 		this.width = tagpro.TILE_SIZE * 10;
 		this.height = tagpro.TILE_SIZE * 10;
 
-		this.initThree(options);
+		this.initThree();
 
 		this.baseTexture = new PIXI.BaseTexture(this.renderer.domElement);
 
 		this.packer = new Packer(this.width, this.height);
+
+		this.tilePadding = 15;
+
+		this.textureIndexRed = 0;
+		this.textureIndexBlue = 0;
+
+		if (config.randomOrder) {
+			this.shuffleArray(config.texturesRed);
+			this.shuffleArray(config.texturesBlue);
+		}
 	}
 
-	initThree(options) {
+	initThree() {
 		this.renderer = new THREE.WebGLRenderer({
 			alpha: true,
 			antialias: true
@@ -60,8 +65,8 @@ export default class TextureCanvas {
 				player,
 				sphere,
 				angle: player.angle,
-				w: tagpro.TILE_SIZE + tilePadding,
-				h: tagpro.TILE_SIZE + tilePadding
+				w: tagpro.TILE_SIZE + this.tilePadding,
+				h: tagpro.TILE_SIZE + this.tilePadding
 			};
 
 			this.updateBinPacking();
@@ -158,12 +163,12 @@ export default class TextureCanvas {
 	getTexturePathForPlayer(player) {
 		var texture;
 		if (player.team === 1) {
-			texture = config.texturesRed[textureIndexRed % config.texturesRed.length] || defaults.texturesRed[0];
-			textureIndexRed += 1;
+			texture = this.config.texturesRed[this.textureIndexRed % this.config.texturesRed.length];
+			this.textureIndexRed += 1;
 		}
 		else {
-			texture = config.texturesBlue[textureIndexBlue % config.texturesBlue.length] || defaults.texturesBlue[0];
-			textureIndexBlue += 1;
+			texture = this.config.texturesBlue[this.textureIndexBlue % this.config.texturesBlue.length];
+			this.textureIndexBlue += 1;
 		}
 
 		return texture;
@@ -174,10 +179,21 @@ export default class TextureCanvas {
 			return;
 		}
 
-		ThreeUtils.rotateX(meta.sphere, -(player.lx || 0) * 0.1 * config.velocityCoefficient);
-		ThreeUtils.rotateY(meta.sphere, (player.ly || 0) * 0.1 * config.velocityCoefficient);
+		ThreeUtils.rotateX(meta.sphere, -(player.lx || 0) * 0.1 * this.config.velocityCoefficient);
+		ThreeUtils.rotateY(meta.sphere, (player.ly || 0) * 0.1 * this.config.velocityCoefficient);
 
 		var theta = player.angle - meta.angle;
-		ThreeUtils.rotateZ(meta.sphere, theta * config.rotationCoefficient);
+		ThreeUtils.rotateZ(meta.sphere, theta * this.config.rotationCoefficient);
+	}
+
+	shuffleArray(array) {
+		for (var i = array.length - 1; i > 0; i--) {
+			var j = Math.floor(Math.random() * (i + 1));
+			var temp = array[i];
+			array[i] = array[j];
+			array[j] = temp;
+		}
+
+		return array;
 	}
 }

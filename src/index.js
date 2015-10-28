@@ -1,14 +1,14 @@
 import $ from 'jquery';
 import Ractive from 'ractive';
 
-import inject3D from './lib/inject_3d';
+import init3D from './lib/init_3d';
 import { initSelectize } from './lib/selectize_utils';
 import Options from './components/options';
 import slide from './transitions/slide';
 
 // Check if is in game
 if (tagpro.state > 0) {
-	inject3D();
+	init3D();
 }
 else if (location.pathname === '/') {
 	GM_addStyle(`

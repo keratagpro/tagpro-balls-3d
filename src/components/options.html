@@ -42,6 +42,11 @@
 
 		{{#if showAdvanced}}
 			<label>
+				<span>Random texture order</span>
+				<input type="checkbox" checked="{{randomOrder}}">
+			</label>
+
+			<label>
 				<span>Velocity coefficient</span>
 				<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
 			</label>

@@ -1,8 +1,9 @@
 import { before, after } from './hooks';
+import config from './config';
 import TextureCanvas from './texture_canvas';
 
 export default function inject3D() {
-	var texture = new TextureCanvas();
+	var texture = new TextureCanvas(config);
 
 	var tr = tagpro.renderer;
 
