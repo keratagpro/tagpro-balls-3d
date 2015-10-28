@@ -1,469 +1,795 @@
 // ==UserScript==
 // @name          TagPro Balls 3D
 // @description   Replaces ball sprites with rotating 3D ball sprites using THREE.js.
-// @version       0.3.2
+// @version       0.4.0
 // @author        Kera
+// @grant         GM_addStyle
 // @grant         GM_getValue
 // @grant         GM_setValue
-// @require       https://cdnjs.cloudflare.com/ajax/libs/three.js/r72/three.min.js
-// @namespace     http://github.com/keratagpro/
+// @grant         GM_deleteValue
+// @grant         GM_listValues
+// @namespace     http://github.com/keratagpro/tagpro-balls-3d/
 // @downloadUrl   https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.user.js
 // @updateUrl     https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.meta.js
-// @include       http://tagpro-*.koalabeast.com:*
-// @include       http://tangent.jukejuice.com:*
-// @include       http://*.newcompte.fr:*
+// @include       http://tagpro-*.koalabeast.com*
+// @include       http://tangent.jukejuice.com*
+// @include       http://*.newcompte.fr*
+// @require       https://cdnjs.cloudflare.com/ajax/libs/ractive/0.7.3/ractive.min.js
+// @require       https://cdnjs.cloudflare.com/ajax/libs/three.js/r73/three.min.js
 // ==/UserScript==
 
-// HACK: browserify-shim tries to find libraries from window/global, which are unavailable in userscripts
-window.THREE = window.THREE || THREE;
-window.PIXI = window.PIXI || PIXI;
+tagpro.ready(function() {
+(function ($,Ractive,THREE,PIXI) { 'use strict';
 
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var lookup="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";!function(t){"use strict";function r(t){var r=t.charCodeAt(0);return r===h||r===u?62:r===c||r===f?63:o>r?-1:o+10>r?r-o+26+26:i+26>r?r-i:A+26>r?r-A+26:void 0}function e(t){function e(t){i[f++]=t}var n,h,c,o,A,i;if(t.length%4>0)throw new Error("Invalid string. Length must be a multiple of 4");var u=t.length;A="="===t.charAt(u-2)?2:"="===t.charAt(u-1)?1:0,i=new a(3*t.length/4-A),c=A>0?t.length-4:t.length;var f=0;for(n=0,h=0;c>n;n+=4,h+=3)o=r(t.charAt(n))<<18|r(t.charAt(n+1))<<12|r(t.charAt(n+2))<<6|r(t.charAt(n+3)),e((16711680&o)>>16),e((65280&o)>>8),e(255&o);return 2===A?(o=r(t.charAt(n))<<2|r(t.charAt(n+1))>>4,e(255&o)):1===A&&(o=r(t.charAt(n))<<10|r(t.charAt(n+1))<<4|r(t.charAt(n+2))>>2,e(o>>8&255),e(255&o)),i}function n(t){function r(t){return lookup.charAt(t)}function e(t){return r(t>>18&63)+r(t>>12&63)+r(t>>6&63)+r(63&t)}var n,a,h,c=t.length%3,o="";for(n=0,h=t.length-c;h>n;n+=3)a=(t[n]<<16)+(t[n+1]<<8)+t[n+2],o+=e(a);switch(c){case 1:a=t[t.length-1],o+=r(a>>2),o+=r(a<<4&63),o+="==";break;case 2:a=(t[t.length-2]<<8)+t[t.length-1],o+=r(a>>10),o+=r(a>>4&63),o+=r(a<<2&63),o+="="}return o}var a="undefined"!=typeof Uint8Array?Uint8Array:Array,h="+".charCodeAt(0),c="/".charCodeAt(0),o="0".charCodeAt(0),A="a".charCodeAt(0),i="A".charCodeAt(0),u="-".charCodeAt(0),f="_".charCodeAt(0);t.toByteArray=e,t.fromByteArray=n}("undefined"==typeof exports?this.base64js={}:exports);
+	$ = 'default' in $ ? $['default'] : $;
+	Ractive = 'default' in Ractive ? Ractive['default'] : Ractive;
+	THREE = 'default' in THREE ? THREE['default'] : THREE;
+	PIXI = 'default' in PIXI ? PIXI['default'] : PIXI;
 
-},{}],2:[function(require,module,exports){
-(function (global){
-function kMaxLength(){return Buffer.TYPED_ARRAY_SUPPORT?2147483647:1073741823}function Buffer(t){return this instanceof Buffer?(this.length=0,this.parent=void 0,"number"==typeof t?fromNumber(this,t):"string"==typeof t?fromString(this,t,arguments.length>1?arguments[1]:"utf8"):fromObject(this,t)):arguments.length>1?new Buffer(t,arguments[1]):new Buffer(t)}function fromNumber(t,e){if(t=allocate(t,0>e?0:0|checked(e)),!Buffer.TYPED_ARRAY_SUPPORT)for(var r=0;e>r;r++)t[r]=0;return t}function fromString(t,e,r){("string"!=typeof r||""===r)&&(r="utf8");var n=0|byteLength(e,r);return t=allocate(t,n),t.write(e,r),t}function fromObject(t,e){if(Buffer.isBuffer(e))return fromBuffer(t,e);if(isArray(e))return fromArray(t,e);if(null==e)throw new TypeError("must start with number, buffer, array or string");if("undefined"!=typeof ArrayBuffer){if(e.buffer instanceof ArrayBuffer)return fromTypedArray(t,e);if(e instanceof ArrayBuffer)return fromArrayBuffer(t,e)}return e.length?fromArrayLike(t,e):fromJsonObject(t,e)}function fromBuffer(t,e){var r=0|checked(e.length);return t=allocate(t,r),e.copy(t,0,0,r),t}function fromArray(t,e){var r=0|checked(e.length);t=allocate(t,r);for(var n=0;r>n;n+=1)t[n]=255&e[n];return t}function fromTypedArray(t,e){var r=0|checked(e.length);t=allocate(t,r);for(var n=0;r>n;n+=1)t[n]=255&e[n];return t}function fromArrayBuffer(t,e){return Buffer.TYPED_ARRAY_SUPPORT?(e.byteLength,t=Buffer._augment(new Uint8Array(e))):t=fromTypedArray(t,new Uint8Array(e)),t}function fromArrayLike(t,e){var r=0|checked(e.length);t=allocate(t,r);for(var n=0;r>n;n+=1)t[n]=255&e[n];return t}function fromJsonObject(t,e){var r,n=0;"Buffer"===e.type&&isArray(e.data)&&(r=e.data,n=0|checked(r.length)),t=allocate(t,n);for(var i=0;n>i;i+=1)t[i]=255&r[i];return t}function allocate(t,e){Buffer.TYPED_ARRAY_SUPPORT?(t=Buffer._augment(new Uint8Array(e)),t.__proto__=Buffer.prototype):(t.length=e,t._isBuffer=!0);var r=0!==e&&e<=Buffer.poolSize>>>1;return r&&(t.parent=rootParent),t}function checked(t){if(t>=kMaxLength())throw new RangeError("Attempt to allocate Buffer larger than maximum size: 0x"+kMaxLength().toString(16)+" bytes");return 0|t}function SlowBuffer(t,e){if(!(this instanceof SlowBuffer))return new SlowBuffer(t,e);var r=new Buffer(t,e);return delete r.parent,r}function byteLength(t,e){"string"!=typeof t&&(t=""+t);var r=t.length;if(0===r)return 0;for(var n=!1;;)switch(e){case"ascii":case"binary":case"raw":case"raws":return r;case"utf8":case"utf-8":return utf8ToBytes(t).length;case"ucs2":case"ucs-2":case"utf16le":case"utf-16le":return 2*r;case"hex":return r>>>1;case"base64":return base64ToBytes(t).length;default:if(n)return utf8ToBytes(t).length;e=(""+e).toLowerCase(),n=!0}}function slowToString(t,e,r){var n=!1;if(e=0|e,r=void 0===r||r===1/0?this.length:0|r,t||(t="utf8"),0>e&&(e=0),r>this.length&&(r=this.length),e>=r)return"";for(;;)switch(t){case"hex":return hexSlice(this,e,r);case"utf8":case"utf-8":return utf8Slice(this,e,r);case"ascii":return asciiSlice(this,e,r);case"binary":return binarySlice(this,e,r);case"base64":return base64Slice(this,e,r);case"ucs2":case"ucs-2":case"utf16le":case"utf-16le":return utf16leSlice(this,e,r);default:if(n)throw new TypeError("Unknown encoding: "+t);t=(t+"").toLowerCase(),n=!0}}function hexWrite(t,e,r,n){r=Number(r)||0;var i=t.length-r;n?(n=Number(n),n>i&&(n=i)):n=i;var f=e.length;if(f%2!==0)throw new Error("Invalid hex string");n>f/2&&(n=f/2);for(var o=0;n>o;o++){var u=parseInt(e.substr(2*o,2),16);if(isNaN(u))throw new Error("Invalid hex string");t[r+o]=u}return o}function utf8Write(t,e,r,n){return blitBuffer(utf8ToBytes(e,t.length-r),t,r,n)}function asciiWrite(t,e,r,n){return blitBuffer(asciiToBytes(e),t,r,n)}function binaryWrite(t,e,r,n){return asciiWrite(t,e,r,n)}function base64Write(t,e,r,n){return blitBuffer(base64ToBytes(e),t,r,n)}function ucs2Write(t,e,r,n){return blitBuffer(utf16leToBytes(e,t.length-r),t,r,n)}function base64Slice(t,e,r){return 0===e&&r===t.length?base64.fromByteArray(t):base64.fromByteArray(t.slice(e,r))}function utf8Slice(t,e,r){r=Math.min(t.length,r);for(var n=[],i=e;r>i;){var f=t[i],o=null,u=f>239?4:f>223?3:f>191?2:1;if(r>=i+u){var s,a,h,c;switch(u){case 1:128>f&&(o=f);break;case 2:s=t[i+1],128===(192&s)&&(c=(31&f)<<6|63&s,c>127&&(o=c));break;case 3:s=t[i+1],a=t[i+2],128===(192&s)&&128===(192&a)&&(c=(15&f)<<12|(63&s)<<6|63&a,c>2047&&(55296>c||c>57343)&&(o=c));break;case 4:s=t[i+1],a=t[i+2],h=t[i+3],128===(192&s)&&128===(192&a)&&128===(192&h)&&(c=(15&f)<<18|(63&s)<<12|(63&a)<<6|63&h,c>65535&&1114112>c&&(o=c))}}null===o?(o=65533,u=1):o>65535&&(o-=65536,n.push(o>>>10&1023|55296),o=56320|1023&o),n.push(o),i+=u}return decodeCodePointsArray(n)}function decodeCodePointsArray(t){var e=t.length;if(MAX_ARGUMENTS_LENGTH>=e)return String.fromCharCode.apply(String,t);for(var r="",n=0;e>n;)r+=String.fromCharCode.apply(String,t.slice(n,n+=MAX_ARGUMENTS_LENGTH));return r}function asciiSlice(t,e,r){var n="";r=Math.min(t.length,r);for(var i=e;r>i;i++)n+=String.fromCharCode(127&t[i]);return n}function binarySlice(t,e,r){var n="";r=Math.min(t.length,r);for(var i=e;r>i;i++)n+=String.fromCharCode(t[i]);return n}function hexSlice(t,e,r){var n=t.length;(!e||0>e)&&(e=0),(!r||0>r||r>n)&&(r=n);for(var i="",f=e;r>f;f++)i+=toHex(t[f]);return i}function utf16leSlice(t,e,r){for(var n=t.slice(e,r),i="",f=0;f<n.length;f+=2)i+=String.fromCharCode(n[f]+256*n[f+1]);return i}function checkOffset(t,e,r){if(t%1!==0||0>t)throw new RangeError("offset is not uint");if(t+e>r)throw new RangeError("Trying to access beyond buffer length")}function checkInt(t,e,r,n,i,f){if(!Buffer.isBuffer(t))throw new TypeError("buffer must be a Buffer instance");if(e>i||f>e)throw new RangeError("value is out of bounds");if(r+n>t.length)throw new RangeError("index out of range")}function objectWriteUInt16(t,e,r,n){0>e&&(e=65535+e+1);for(var i=0,f=Math.min(t.length-r,2);f>i;i++)t[r+i]=(e&255<<8*(n?i:1-i))>>>8*(n?i:1-i)}function objectWriteUInt32(t,e,r,n){0>e&&(e=4294967295+e+1);for(var i=0,f=Math.min(t.length-r,4);f>i;i++)t[r+i]=e>>>8*(n?i:3-i)&255}function checkIEEE754(t,e,r,n,i,f){if(e>i||f>e)throw new RangeError("value is out of bounds");if(r+n>t.length)throw new RangeError("index out of range");if(0>r)throw new RangeError("index out of range")}function writeFloat(t,e,r,n,i){return i||checkIEEE754(t,e,r,4,3.4028234663852886e38,-3.4028234663852886e38),ieee754.write(t,e,r,n,23,4),r+4}function writeDouble(t,e,r,n,i){return i||checkIEEE754(t,e,r,8,1.7976931348623157e308,-1.7976931348623157e308),ieee754.write(t,e,r,n,52,8),r+8}function base64clean(t){if(t=stringtrim(t).replace(INVALID_BASE64_RE,""),t.length<2)return"";for(;t.length%4!==0;)t+="=";return t}function stringtrim(t){return t.trim?t.trim():t.replace(/^\s+|\s+$/g,"")}function toHex(t){return 16>t?"0"+t.toString(16):t.toString(16)}function utf8ToBytes(t,e){e=e||1/0;for(var r,n=t.length,i=null,f=[],o=0;n>o;o++){if(r=t.charCodeAt(o),r>55295&&57344>r){if(!i){if(r>56319){(e-=3)>-1&&f.push(239,191,189);continue}if(o+1===n){(e-=3)>-1&&f.push(239,191,189);continue}i=r;continue}if(56320>r){(e-=3)>-1&&f.push(239,191,189),i=r;continue}r=i-55296<<10|r-56320|65536}else i&&(e-=3)>-1&&f.push(239,191,189);if(i=null,128>r){if((e-=1)<0)break;f.push(r)}else if(2048>r){if((e-=2)<0)break;f.push(r>>6|192,63&r|128)}else if(65536>r){if((e-=3)<0)break;f.push(r>>12|224,r>>6&63|128,63&r|128)}else{if(!(1114112>r))throw new Error("Invalid code point");if((e-=4)<0)break;f.push(r>>18|240,r>>12&63|128,r>>6&63|128,63&r|128)}}return f}function asciiToBytes(t){for(var e=[],r=0;r<t.length;r++)e.push(255&t.charCodeAt(r));return e}function utf16leToBytes(t,e){for(var r,n,i,f=[],o=0;o<t.length&&!((e-=2)<0);o++)r=t.charCodeAt(o),n=r>>8,i=r%256,f.push(i),f.push(n);return f}function base64ToBytes(t){return base64.toByteArray(base64clean(t))}function blitBuffer(t,e,r,n){for(var i=0;n>i&&!(i+r>=e.length||i>=t.length);i++)e[i+r]=t[i];return i}var base64=require("base64-js"),ieee754=require("ieee754"),isArray=require("is-array");exports.Buffer=Buffer,exports.SlowBuffer=SlowBuffer,exports.INSPECT_MAX_BYTES=50,Buffer.poolSize=8192;var rootParent={};Buffer.TYPED_ARRAY_SUPPORT=void 0!==global.TYPED_ARRAY_SUPPORT?global.TYPED_ARRAY_SUPPORT:function(){function t(){}try{var e=new Uint8Array(1);return e.foo=function(){return 42},e.constructor=t,42===e.foo()&&e.constructor===t&&"function"==typeof e.subarray&&0===e.subarray(1,1).byteLength}catch(r){return!1}}(),Buffer.TYPED_ARRAY_SUPPORT&&(Buffer.prototype.__proto__=Uint8Array.prototype,Buffer.__proto__=Uint8Array),Buffer.isBuffer=function(t){return!(null==t||!t._isBuffer)},Buffer.compare=function(t,e){if(!Buffer.isBuffer(t)||!Buffer.isBuffer(e))throw new TypeError("Arguments must be Buffers");if(t===e)return 0;for(var r=t.length,n=e.length,i=0,f=Math.min(r,n);f>i&&t[i]===e[i];)++i;return i!==f&&(r=t[i],n=e[i]),n>r?-1:r>n?1:0},Buffer.isEncoding=function(t){switch(String(t).toLowerCase()){case"hex":case"utf8":case"utf-8":case"ascii":case"binary":case"base64":case"raw":case"ucs2":case"ucs-2":case"utf16le":case"utf-16le":return!0;default:return!1}},Buffer.concat=function(t,e){if(!isArray(t))throw new TypeError("list argument must be an Array of Buffers.");if(0===t.length)return new Buffer(0);var r;if(void 0===e)for(e=0,r=0;r<t.length;r++)e+=t[r].length;var n=new Buffer(e),i=0;for(r=0;r<t.length;r++){var f=t[r];f.copy(n,i),i+=f.length}return n},Buffer.byteLength=byteLength,Buffer.prototype.length=void 0,Buffer.prototype.parent=void 0,Buffer.prototype.toString=function(){var t=0|this.length;return 0===t?"":0===arguments.length?utf8Slice(this,0,t):slowToString.apply(this,arguments)},Buffer.prototype.equals=function(t){if(!Buffer.isBuffer(t))throw new TypeError("Argument must be a Buffer");return this===t?!0:0===Buffer.compare(this,t)},Buffer.prototype.inspect=function(){var t="",e=exports.INSPECT_MAX_BYTES;return this.length>0&&(t=this.toString("hex",0,e).match(/.{2}/g).join(" "),this.length>e&&(t+=" ... ")),"<Buffer "+t+">"},Buffer.prototype.compare=function(t){if(!Buffer.isBuffer(t))throw new TypeError("Argument must be a Buffer");return this===t?0:Buffer.compare(this,t)},Buffer.prototype.indexOf=function(t,e){function r(t,e,r){for(var n=-1,i=0;r+i<t.length;i++)if(t[r+i]===e[-1===n?0:i-n]){if(-1===n&&(n=i),i-n+1===e.length)return r+n}else n=-1;return-1}if(e>2147483647?e=2147483647:-2147483648>e&&(e=-2147483648),e>>=0,0===this.length)return-1;if(e>=this.length)return-1;if(0>e&&(e=Math.max(this.length+e,0)),"string"==typeof t)return 0===t.length?-1:String.prototype.indexOf.call(this,t,e);if(Buffer.isBuffer(t))return r(this,t,e);if("number"==typeof t)return Buffer.TYPED_ARRAY_SUPPORT&&"function"===Uint8Array.prototype.indexOf?Uint8Array.prototype.indexOf.call(this,t,e):r(this,[t],e);throw new TypeError("val must be string, number or Buffer")},Buffer.prototype.get=function(t){return console.log(".get() is deprecated. Access using array indexes instead."),this.readUInt8(t)},Buffer.prototype.set=function(t,e){return console.log(".set() is deprecated. Access using array indexes instead."),this.writeUInt8(t,e)},Buffer.prototype.write=function(t,e,r,n){if(void 0===e)n="utf8",r=this.length,e=0;else if(void 0===r&&"string"==typeof e)n=e,r=this.length,e=0;else if(isFinite(e))e=0|e,isFinite(r)?(r=0|r,void 0===n&&(n="utf8")):(n=r,r=void 0);else{var i=n;n=e,e=0|r,r=i}var f=this.length-e;if((void 0===r||r>f)&&(r=f),t.length>0&&(0>r||0>e)||e>this.length)throw new RangeError("attempt to write outside buffer bounds");n||(n="utf8");for(var o=!1;;)switch(n){case"hex":return hexWrite(this,t,e,r);case"utf8":case"utf-8":return utf8Write(this,t,e,r);case"ascii":return asciiWrite(this,t,e,r);case"binary":return binaryWrite(this,t,e,r);case"base64":return base64Write(this,t,e,r);case"ucs2":case"ucs-2":case"utf16le":case"utf-16le":return ucs2Write(this,t,e,r);default:if(o)throw new TypeError("Unknown encoding: "+n);n=(""+n).toLowerCase(),o=!0}},Buffer.prototype.toJSON=function(){return{type:"Buffer",data:Array.prototype.slice.call(this._arr||this,0)}};var MAX_ARGUMENTS_LENGTH=4096;Buffer.prototype.slice=function(t,e){var r=this.length;t=~~t,e=void 0===e?r:~~e,0>t?(t+=r,0>t&&(t=0)):t>r&&(t=r),0>e?(e+=r,0>e&&(e=0)):e>r&&(e=r),t>e&&(e=t);var n;if(Buffer.TYPED_ARRAY_SUPPORT)n=Buffer._augment(this.subarray(t,e));else{var i=e-t;n=new Buffer(i,void 0);for(var f=0;i>f;f++)n[f]=this[f+t]}return n.length&&(n.parent=this.parent||this),n},Buffer.prototype.readUIntLE=function(t,e,r){t=0|t,e=0|e,r||checkOffset(t,e,this.length);for(var n=this[t],i=1,f=0;++f<e&&(i*=256);)n+=this[t+f]*i;return n},Buffer.prototype.readUIntBE=function(t,e,r){t=0|t,e=0|e,r||checkOffset(t,e,this.length);for(var n=this[t+--e],i=1;e>0&&(i*=256);)n+=this[t+--e]*i;return n},Buffer.prototype.readUInt8=function(t,e){return e||checkOffset(t,1,this.length),this[t]},Buffer.prototype.readUInt16LE=function(t,e){return e||checkOffset(t,2,this.length),this[t]|this[t+1]<<8},Buffer.prototype.readUInt16BE=function(t,e){return e||checkOffset(t,2,this.length),this[t]<<8|this[t+1]},Buffer.prototype.readUInt32LE=function(t,e){return e||checkOffset(t,4,this.length),(this[t]|this[t+1]<<8|this[t+2]<<16)+16777216*this[t+3]},Buffer.prototype.readUInt32BE=function(t,e){return e||checkOffset(t,4,this.length),16777216*this[t]+(this[t+1]<<16|this[t+2]<<8|this[t+3])},Buffer.prototype.readIntLE=function(t,e,r){t=0|t,e=0|e,r||checkOffset(t,e,this.length);for(var n=this[t],i=1,f=0;++f<e&&(i*=256);)n+=this[t+f]*i;return i*=128,n>=i&&(n-=Math.pow(2,8*e)),n},Buffer.prototype.readIntBE=function(t,e,r){t=0|t,e=0|e,r||checkOffset(t,e,this.length);for(var n=e,i=1,f=this[t+--n];n>0&&(i*=256);)f+=this[t+--n]*i;return i*=128,f>=i&&(f-=Math.pow(2,8*e)),f},Buffer.prototype.readInt8=function(t,e){return e||checkOffset(t,1,this.length),128&this[t]?-1*(255-this[t]+1):this[t]},Buffer.prototype.readInt16LE=function(t,e){e||checkOffset(t,2,this.length);var r=this[t]|this[t+1]<<8;return 32768&r?4294901760|r:r},Buffer.prototype.readInt16BE=function(t,e){e||checkOffset(t,2,this.length);var r=this[t+1]|this[t]<<8;return 32768&r?4294901760|r:r},Buffer.prototype.readInt32LE=function(t,e){return e||checkOffset(t,4,this.length),this[t]|this[t+1]<<8|this[t+2]<<16|this[t+3]<<24},Buffer.prototype.readInt32BE=function(t,e){return e||checkOffset(t,4,this.length),this[t]<<24|this[t+1]<<16|this[t+2]<<8|this[t+3]},Buffer.prototype.readFloatLE=function(t,e){return e||checkOffset(t,4,this.length),ieee754.read(this,t,!0,23,4)},Buffer.prototype.readFloatBE=function(t,e){return e||checkOffset(t,4,this.length),ieee754.read(this,t,!1,23,4)},Buffer.prototype.readDoubleLE=function(t,e){return e||checkOffset(t,8,this.length),ieee754.read(this,t,!0,52,8)},Buffer.prototype.readDoubleBE=function(t,e){return e||checkOffset(t,8,this.length),ieee754.read(this,t,!1,52,8)},Buffer.prototype.writeUIntLE=function(t,e,r,n){t=+t,e=0|e,r=0|r,n||checkInt(this,t,e,r,Math.pow(2,8*r),0);var i=1,f=0;for(this[e]=255&t;++f<r&&(i*=256);)this[e+f]=t/i&255;return e+r},Buffer.prototype.writeUIntBE=function(t,e,r,n){t=+t,e=0|e,r=0|r,n||checkInt(this,t,e,r,Math.pow(2,8*r),0);var i=r-1,f=1;for(this[e+i]=255&t;--i>=0&&(f*=256);)this[e+i]=t/f&255;return e+r},Buffer.prototype.writeUInt8=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,1,255,0),Buffer.TYPED_ARRAY_SUPPORT||(t=Math.floor(t)),this[e]=t,e+1},Buffer.prototype.writeUInt16LE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,2,65535,0),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t,this[e+1]=t>>>8):objectWriteUInt16(this,t,e,!0),e+2},Buffer.prototype.writeUInt16BE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,2,65535,0),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t>>>8,this[e+1]=t):objectWriteUInt16(this,t,e,!1),e+2},Buffer.prototype.writeUInt32LE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,4,4294967295,0),Buffer.TYPED_ARRAY_SUPPORT?(this[e+3]=t>>>24,this[e+2]=t>>>16,this[e+1]=t>>>8,this[e]=t):objectWriteUInt32(this,t,e,!0),e+4},Buffer.prototype.writeUInt32BE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,4,4294967295,0),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t>>>24,this[e+1]=t>>>16,this[e+2]=t>>>8,this[e+3]=t):objectWriteUInt32(this,t,e,!1),e+4},Buffer.prototype.writeIntLE=function(t,e,r,n){if(t=+t,e=0|e,!n){var i=Math.pow(2,8*r-1);checkInt(this,t,e,r,i-1,-i)}var f=0,o=1,u=0>t?1:0;for(this[e]=255&t;++f<r&&(o*=256);)this[e+f]=(t/o>>0)-u&255;return e+r},Buffer.prototype.writeIntBE=function(t,e,r,n){if(t=+t,e=0|e,!n){var i=Math.pow(2,8*r-1);checkInt(this,t,e,r,i-1,-i)}var f=r-1,o=1,u=0>t?1:0;for(this[e+f]=255&t;--f>=0&&(o*=256);)this[e+f]=(t/o>>0)-u&255;return e+r},Buffer.prototype.writeInt8=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,1,127,-128),Buffer.TYPED_ARRAY_SUPPORT||(t=Math.floor(t)),0>t&&(t=255+t+1),this[e]=t,e+1},Buffer.prototype.writeInt16LE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,2,32767,-32768),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t,this[e+1]=t>>>8):objectWriteUInt16(this,t,e,!0),e+2},Buffer.prototype.writeInt16BE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,2,32767,-32768),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t>>>8,this[e+1]=t):objectWriteUInt16(this,t,e,!1),e+2},Buffer.prototype.writeInt32LE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,4,2147483647,-2147483648),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t,this[e+1]=t>>>8,this[e+2]=t>>>16,this[e+3]=t>>>24):objectWriteUInt32(this,t,e,!0),e+4},Buffer.prototype.writeInt32BE=function(t,e,r){return t=+t,e=0|e,r||checkInt(this,t,e,4,2147483647,-2147483648),0>t&&(t=4294967295+t+1),Buffer.TYPED_ARRAY_SUPPORT?(this[e]=t>>>24,this[e+1]=t>>>16,this[e+2]=t>>>8,this[e+3]=t):objectWriteUInt32(this,t,e,!1),e+4},Buffer.prototype.writeFloatLE=function(t,e,r){return writeFloat(this,t,e,!0,r)},Buffer.prototype.writeFloatBE=function(t,e,r){return writeFloat(this,t,e,!1,r)},Buffer.prototype.writeDoubleLE=function(t,e,r){return writeDouble(this,t,e,!0,r)},Buffer.prototype.writeDoubleBE=function(t,e,r){return writeDouble(this,t,e,!1,r)},Buffer.prototype.copy=function(t,e,r,n){if(r||(r=0),n||0===n||(n=this.length),e>=t.length&&(e=t.length),e||(e=0),n>0&&r>n&&(n=r),n===r)return 0;if(0===t.length||0===this.length)return 0;if(0>e)throw new RangeError("targetStart out of bounds");if(0>r||r>=this.length)throw new RangeError("sourceStart out of bounds");if(0>n)throw new RangeError("sourceEnd out of bounds");n>this.length&&(n=this.length),t.length-e<n-r&&(n=t.length-e+r);var i,f=n-r;if(this===t&&e>r&&n>e)for(i=f-1;i>=0;i--)t[i+e]=this[i+r];else if(1e3>f||!Buffer.TYPED_ARRAY_SUPPORT)for(i=0;f>i;i++)t[i+e]=this[i+r];else t._set(this.subarray(r,r+f),e);return f},Buffer.prototype.fill=function(t,e,r){if(t||(t=0),e||(e=0),r||(r=this.length),e>r)throw new RangeError("end < start");if(r!==e&&0!==this.length){if(0>e||e>=this.length)throw new RangeError("start out of bounds");if(0>r||r>this.length)throw new RangeError("end out of bounds");var n;if("number"==typeof t)for(n=e;r>n;n++)this[n]=t;else{var i=utf8ToBytes(t.toString()),f=i.length;for(n=e;r>n;n++)this[n]=i[n%f]}return this}},Buffer.prototype.toArrayBuffer=function(){if("undefined"!=typeof Uint8Array){if(Buffer.TYPED_ARRAY_SUPPORT)return new Buffer(this).buffer;for(var t=new Uint8Array(this.length),e=0,r=t.length;r>e;e+=1)t[e]=this[e];return t.buffer}throw new TypeError("Buffer.toArrayBuffer not supported in this browser")};var BP=Buffer.prototype;Buffer._augment=function(t){return t.constructor=Buffer,t._isBuffer=!0,t._set=t.set,t.get=BP.get,t.set=BP.set,t.write=BP.write,t.toString=BP.toString,t.toLocaleString=BP.toString,t.toJSON=BP.toJSON,t.equals=BP.equals,t.compare=BP.compare,t.indexOf=BP.indexOf,t.copy=BP.copy,t.slice=BP.slice,t.readUIntLE=BP.readUIntLE,t.readUIntBE=BP.readUIntBE,t.readUInt8=BP.readUInt8,t.readUInt16LE=BP.readUInt16LE,t.readUInt16BE=BP.readUInt16BE,t.readUInt32LE=BP.readUInt32LE,t.readUInt32BE=BP.readUInt32BE,t.readIntLE=BP.readIntLE,t.readIntBE=BP.readIntBE,t.readInt8=BP.readInt8,t.readInt16LE=BP.readInt16LE,t.readInt16BE=BP.readInt16BE,t.readInt32LE=BP.readInt32LE,t.readInt32BE=BP.readInt32BE,t.readFloatLE=BP.readFloatLE,t.readFloatBE=BP.readFloatBE,t.readDoubleLE=BP.readDoubleLE,t.readDoubleBE=BP.readDoubleBE,t.writeUInt8=BP.writeUInt8,t.writeUIntLE=BP.writeUIntLE,t.writeUIntBE=BP.writeUIntBE,t.writeUInt16LE=BP.writeUInt16LE,t.writeUInt16BE=BP.writeUInt16BE,t.writeUInt32LE=BP.writeUInt32LE,t.writeUInt32BE=BP.writeUInt32BE,t.writeIntLE=BP.writeIntLE,t.writeIntBE=BP.writeIntBE,t.writeInt8=BP.writeInt8,t.writeInt16LE=BP.writeInt16LE,t.writeInt16BE=BP.writeInt16BE,t.writeInt32LE=BP.writeInt32LE,t.writeInt32BE=BP.writeInt32BE,t.writeFloatLE=BP.writeFloatLE,t.writeFloatBE=BP.writeFloatBE,t.writeDoubleLE=BP.writeDoubleLE,t.writeDoubleBE=BP.writeDoubleBE,t.fill=BP.fill,t.inspect=BP.inspect,t.toArrayBuffer=BP.toArrayBuffer,t};var INVALID_BASE64_RE=/[^+\/0-9A-Za-z-_]/g;
+	var babelHelpers = {};
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":1,"ieee754":5,"is-array":6}],3:[function(require,module,exports){
-(function (Buffer){
-var clone=function(){"use strict";function e(t,r,n,o){function f(t,n){if(null===t)return null;if(0==n)return t;var i,a;if("object"!=typeof t)return t;if(e.__isArray(t))i=[];else if(e.__isRegExp(t))i=new RegExp(t.source,u(t)),t.lastIndex&&(i.lastIndex=t.lastIndex);else if(e.__isDate(t))i=new Date(t.getTime());else{if(p&&Buffer.isBuffer(t))return i=new Buffer(t.length),t.copy(i),i;"undefined"==typeof o?(a=Object.getPrototypeOf(t),i=Object.create(a)):(i=Object.create(o),a=o)}if(r){var s=c.indexOf(t);if(-1!=s)return l[s];c.push(t),l.push(i)}for(var y in t){var b;a&&(b=Object.getOwnPropertyDescriptor(a,y)),b&&null==b.set||(i[y]=f(t[y],n-1))}return i}var i;"object"==typeof r&&(n=r.depth,o=r.prototype,i=r.filter,r=r.circular);var c=[],l=[],p="undefined"!=typeof Buffer;return"undefined"==typeof r&&(r=!0),"undefined"==typeof n&&(n=1/0),f(t,n)}function t(e){return Object.prototype.toString.call(e)}function r(e){return"object"==typeof e&&"[object Date]"===t(e)}function n(e){return"object"==typeof e&&"[object Array]"===t(e)}function o(e){return"object"==typeof e&&"[object RegExp]"===t(e)}function u(e){var t="";return e.global&&(t+="g"),e.ignoreCase&&(t+="i"),e.multiline&&(t+="m"),t}return e.clonePrototype=function(e){if(null===e)return null;var t=function(){};return t.prototype=e,new t},e.__objToStr=t,e.__isDate=r,e.__isArray=n,e.__isRegExp=o,e.__getRegExpFlags=u,e}();"object"==typeof module&&module.exports&&(module.exports=clone);
+	babelHelpers.createClass = (function () {
+	  function defineProperties(target, props) {
+	    for (var i = 0; i < props.length; i++) {
+	      var descriptor = props[i];
+	      descriptor.enumerable = descriptor.enumerable || false;
+	      descriptor.configurable = true;
+	      if ("value" in descriptor) descriptor.writable = true;
+	      Object.defineProperty(target, descriptor.key, descriptor);
+	    }
+	  }
 
-}).call(this,require("buffer").Buffer)
-},{"buffer":2}],4:[function(require,module,exports){
-var clone=require("clone");module.exports=function(e,n){return e=e||{},Object.keys(n).forEach(function(o){"undefined"==typeof e[o]&&(e[o]=clone(n[o]))}),e};
+	  return function (Constructor, protoProps, staticProps) {
+	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+	    if (staticProps) defineProperties(Constructor, staticProps);
+	    return Constructor;
+	  };
+	})();
 
-},{"clone":3}],5:[function(require,module,exports){
-exports.read=function(a,o,t,r,h){var M,p,w=8*h-r-1,f=(1<<w)-1,e=f>>1,i=-7,N=t?h-1:0,n=t?-1:1,s=a[o+N];for(N+=n,M=s&(1<<-i)-1,s>>=-i,i+=w;i>0;M=256*M+a[o+N],N+=n,i-=8);for(p=M&(1<<-i)-1,M>>=-i,i+=r;i>0;p=256*p+a[o+N],N+=n,i-=8);if(0===M)M=1-e;else{if(M===f)return p?NaN:(s?-1:1)*(1/0);p+=Math.pow(2,r),M-=e}return(s?-1:1)*p*Math.pow(2,M-r)},exports.write=function(a,o,t,r,h,M){var p,w,f,e=8*M-h-1,i=(1<<e)-1,N=i>>1,n=23===h?Math.pow(2,-24)-Math.pow(2,-77):0,s=r?0:M-1,u=r?1:-1,l=0>o||0===o&&0>1/o?1:0;for(o=Math.abs(o),isNaN(o)||o===1/0?(w=isNaN(o)?1:0,p=i):(p=Math.floor(Math.log(o)/Math.LN2),o*(f=Math.pow(2,-p))<1&&(p--,f*=2),o+=p+N>=1?n/f:n*Math.pow(2,1-N),o*f>=2&&(p++,f/=2),p+N>=i?(w=0,p=i):p+N>=1?(w=(o*f-1)*Math.pow(2,h),p+=N):(w=o*Math.pow(2,N-1)*Math.pow(2,h),p=0));h>=8;a[t+s]=255&w,s+=u,w/=256,h-=8);for(p=p<<h|w,e+=h;e>0;a[t+s]=255&p,s+=u,p/=256,e-=8);a[t+s-u]|=128*l};
+	babelHelpers.classCallCheck = function (instance, Constructor) {
+	  if (!(instance instanceof Constructor)) {
+	    throw new TypeError("Cannot call a class as a function");
+	  }
+	};
+	function injectCSS(src) {
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = src;
+		(document.head || document.body).appendChild(link);
+	}
 
-},{}],6:[function(require,module,exports){
-var isArray=Array.isArray,str=Object.prototype.toString;module.exports=isArray||function(r){return!!r&&"[object Array]"==str.call(r)};
+	function injectScript(src) {
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = src;
+		document.body.appendChild(script);
+	}
 
-},{}],7:[function(require,module,exports){
-"use strict";function toObject(e){if(null===e||void 0===e)throw new TypeError("Object.assign cannot be called with null or undefined");return Object(e)}var hasOwnProperty=Object.prototype.hasOwnProperty,propIsEnumerable=Object.prototype.propertyIsEnumerable;module.exports=Object.assign||function(e,r){for(var t,n,o=toObject(e),a=1;a<arguments.length;a++){t=Object(arguments[a]);for(var l in t)hasOwnProperty.call(t,l)&&(o[l]=t[l]);if(Object.getOwnPropertySymbols){n=Object.getOwnPropertySymbols(t);for(var c=0;c<n.length;c++)propIsEnumerable.call(t,n[c])&&(o[n[c]]=t[n[c]])}}return o};
+	function initSelectize() {
+		injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.legacy.min.css');
+		injectScript('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js');
 
-},{}],8:[function(require,module,exports){
-(function (global){
-'use strict';
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
-
-var _three2 = _interopRequireDefault(_three);
-
-var _pixiJs = (typeof window !== "undefined" ? window['PIXI'] : typeof global !== "undefined" ? global['PIXI'] : null);
-
-var _pixiJs2 = _interopRequireDefault(_pixiJs);
-
-var _libHooks = require('./lib/hooks');
-
-var _libPlayer_utils = require('./lib/player_utils');
-
-var PlayerUtils = _interopRequireWildcard(_libPlayer_utils);
-
-var _libThree_utils = require('./lib/three_utils');
-
-var ThreeUtils = _interopRequireWildcard(_libThree_utils);
-
-var _libObject_grid = require('./lib/object_grid');
-
-var _libObject_grid2 = _interopRequireDefault(_libObject_grid);
-
-_three2['default'].ImageUtils.crossOrigin = '';
-
-var GRID_COLS = 10;
-var GRID_ROWS = 10;
-var TILE_SIZE = 40;
-
-var CANVAS_WIDTH = GRID_COLS * TILE_SIZE;
-var CANVAS_HEIGHT = GRID_ROWS * TILE_SIZE;
-
-var scene = new _three2['default'].Scene();
-ThreeUtils.addLightsToScene(scene);
-
-var grid = new _libObject_grid2['default']({
-	cols: GRID_COLS,
-	rows: GRID_ROWS,
-	cellSize: TILE_SIZE
-});
-
-scene.add(grid);
-
-var renderer = ThreeUtils.createRenderer();
-renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
-
-// For debugging
-// document.body.appendChild(renderer.domElement);
-
-var camera = ThreeUtils.createCamera({
-	width: grid.width,
-	height: grid.height
-});
-
-var baseTexture = new _pixiJs2['default'].BaseTexture(renderer.domElement);
-
-function render() {
-	renderer.render(scene, camera);
-}
-
-tagpro.ready(function () {
-	var tr = tagpro.renderer;
-
-	(0, _libHooks.after)(tr, 'createBallSprite', function (player) {
-		player.lastAngle = player.angle; // initialize lastAngle
-
-		PlayerUtils.createSphereAsync(player, function (sphere) {
-			player.sphere = sphere;
-
-			var rect = grid.add(sphere);
-
-			PlayerUtils.setSprite(player, baseTexture, rect);
-
-			baseTexture.dirty();
+		return new Promise(function (resolve, reject) {
+			(function checkSelectize() {
+				if (typeof Selectize !== 'undefined') {
+					resolve();
+				} else {
+					setTimeout(checkSelectize, 500);
+				}
+			})();
 		});
-	});
+	}
 
-	(0, _libHooks.after)(tr, 'destroyPlayer', function (player) {
-		grid.remove(player.sphere);
-		delete player.sphere;
-	});
+	function createSelectize(textures, ractive) {
+		var optgroups = textures.reduce(function (tags, val) {
+			if (tags.indexOf(val.tag) < 0) {
+				tags.push(val.tag);
+			}
 
-	(0, _libHooks.after)(tr, 'updatePlayerSpritePosition', function (player) {
-		PlayerUtils.rotateSphere(player);
+			return tags;
+		}, []).map(function (tag) {
+			return { tag: tag };
+		});
 
-		player.lastAngle = player.angle;
+		var selectize = $('.texture-select').selectize({
+			plugins: ['remove_button', 'optgroup_columns', {
+				name: 'restore_on_backspace',
+				options: {
+					text: function text(option) {
+						return option[this.settings.valueField];
+					}
+				}
+			}],
+			persist: false,
+			hideSelected: false,
+			options: textures,
+			labelField: 'name',
+			valueField: 'path',
+			searchField: ['name', 'path'],
+			create: function create(input) {
+				var idx = input.lastIndexOf('/');
+				if (idx < 0) {
+					return false;
+				}
 
-		baseTexture.dirty();
-	});
+				var name = input.substring(input.lastIndexOf('/') + 1);
+				return {
+					name: name,
+					text: input,
+					path: input
+				};
+			},
+			optgroups: optgroups,
+			optgroupValueField: 'tag',
+			optgroupLabelField: 'tag',
+			optgroupField: 'tag',
+			dropdownDirection: 'up',
+			render: {
+				item: function item(_item, escape) {
+					return '<div>' + '<img class="option-item-image" src="' + _item.path + '" />' + (_item.name ? '<span class="name">' + escape(_item.name) + '</span>' : '') + '</div>';
+				},
+				option: function option(item, escape) {
+					return '<div>' + '<div class="option-thumbnail"><img src="' + item.path + '" /></div>' + (item.name ? '<span class="option-label">' + escape(item.name) + '</span>' : '') + '</div>';
+				}
+			},
+			onChange: function onChange(val) {
+				ractive.updateModel();
+			}
+		});
+	}
 
-	// Replace original tagpro.renderer.updatePlayerColor
-	tr.updatePlayerColor = function (player) {
-		var color = player.team === 1 ? 'red' : 'blue';
-		var tileId = color + 'ball';
+	function before(obj, methodName, callback) {
+		var orig = obj[methodName];
+		obj[methodName] = function () {
+			callback.apply(this, arguments);
+			return orig.apply(this, arguments);
+		};
+	}
 
-		if (player.sprites.actualBall.tileId !== tileId) {
-			PlayerUtils.updateTexture(player);
-			player.sprites.actualBall.tileId = tileId;
+	function after(obj, methodName, callback) {
+		var orig = obj[methodName];
+		obj[methodName] = function () {
+			var result = orig.apply(this, arguments);
+			callback.apply(this, arguments);
+			return result;
+		};
+	}
+
+	var Storage = (function () {
+		function Storage() {
+			babelHelpers.classCallCheck(this, Storage);
+		}
+
+		babelHelpers.createClass(Storage, null, [{
+			key: "getItem",
+			value: function getItem(key) {
+				return JSON.parse(GM_getValue(key));
+			}
+		}, {
+			key: "setItem",
+			value: function setItem(key, value) {
+				GM_setValue(key, JSON.stringify(value));
+			}
+		}, {
+			key: "removeItem",
+			value: function removeItem(key) {
+				GM_deleteValue(key);
+			}
+		}, {
+			key: "clear",
+			value: function clear() {
+				var _this = this;
+
+				var keys = GM_listValues();
+				keys.forEach(function (key) {
+					return _this.removeItem(key);
+				});
+			}
+		}, {
+			key: "all",
+			value: function all() {
+				var _this2 = this;
+
+				var keys = GM_listValues();
+
+				return keys.reduce(function (map, key) {
+					map[key] = _this2.getItem(key);
+					return map;
+				}, {});
+			}
+		}]);
+		return Storage;
+	})();
+
+	var rootUrl = 'http://keratagpro.github.io/tagpro-balls-3d';
+
+	var defaults = {
+		texturesRed: [rootUrl + '/textures/planets/mars.jpg'],
+		texturesBlue: [rootUrl + '/textures/planets/earth.jpg'],
+		velocityCoefficient: 1.0,
+		rotationCoefficient: 1.0,
+		ambientLightColor: 0x888888,
+		lightColor: 0xcccccc,
+		lightPosition: [-200, -200, -400],
+		lightIntensity: 0.8,
+		anisotropy: 1,
+		minFilter: THREE.LinearFilter,
+		sphereRadius: 19,
+		sphereWidthSegments: 16,
+		sphereHeightSegments: 12,
+		sphereShading: THREE.SmoothShading
+	};
+
+	var config = $.extend(true, {}, defaults, Storage.all());
+
+	var loader = new THREE.TextureLoader();
+	loader.setCrossOrigin('');
+
+	var rotWorldMatrix;
+	var vecY = new THREE.Vector3(1, 0, 0);
+	var vecX = new THREE.Vector3(0, 1, 0);
+	var vecZ = new THREE.Vector3(0, 0, 1);
+
+	function addLightsToScene(scene) {
+		var light = new THREE.AmbientLight(config.ambientLightColor);
+		scene.add(light);
+
+		light = new THREE.DirectionalLight(config.lightColor, config.lightIntensity);
+		light.position.set.apply(light.position, config.lightPosition);
+
+		scene.add(light);
+	}
+
+	function createSphereMesh(texture) {
+		var geometry = new THREE.SphereGeometry(config.sphereRadius, config.sphereWidthSegments, config.sphereHeightSegments);
+
+		var material = new THREE.MeshPhongMaterial({
+			shading: config.sphereShading,
+			map: texture
+		});
+
+		return new THREE.Mesh(geometry, material);
+	}
+
+	function loadTextureAsync(texturePath, callback) {
+		loader.load(texturePath, function (texture) {
+			texture.anisotropy = config.anisotropy;
+			texture.minFilter = config.minFilter;
+
+			callback(texture);
+		});
+	}
+
+	function createCamera(options) {
+		var camera = new THREE.OrthographicCamera(-options.width / 2, options.width / 2, -options.height / 2, options.height / 2, 1, 1000);
+
+		camera.position.z = 900;
+
+		// camera.up = new THREE.Vector3(0, 1, 0);
+		camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+		camera.position.x = options.width / 2;
+		camera.position.y = options.height / 2;
+
+		return camera;
+	}
+
+	// Rotate an object around an arbitrary axis in world space      
+
+	function rotateAroundWorldAxis(object, axis, radians) {
+		if (radians === 0 || isNaN(radians)) {
+			return;
+		}
+
+		rotWorldMatrix = new THREE.Matrix4();
+		rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+		rotWorldMatrix.multiply(object.matrix); // pre-multiply
+		object.matrix = rotWorldMatrix;
+		object.rotation.setFromRotationMatrix(object.matrix);
+	}
+
+	function rotateX(object, radians) {
+		rotateAroundWorldAxis(object, vecX, radians);
+	}
+
+	function rotateY(object, radians) {
+		rotateAroundWorldAxis(object, vecY, radians);
+	}
+
+	function rotateZ(object, radians) {
+		rotateAroundWorldAxis(object, vecZ, radians);
+	}
+
+	function Packer(w, h) {
+		this.init(w, h);
+	}
+
+	Packer.prototype = {
+		init: function init(w, h) {
+			this.root = { x: 0, y: 0, w: w, h: h };
+		},
+		fit: function fit(blocks) {
+			var n, node, block;
+			for (n = 0; n < blocks.length; n++) {
+				block = blocks[n];
+				node = this.findNode(this.root, block.w, block.h);
+				if (node) {
+					block.fit = this.splitNode(node, block.w, block.h);
+				}
+			}
+		},
+		findNode: function findNode(root, w, h) {
+			if (root.used) {
+				return this.findNode(root.right, w, h) || this.findNode(root.down, w, h);
+			} else if (w <= root.w && h <= root.h) {
+				return root;
+			} else {
+				return null;
+			}
+		},
+		splitNode: function splitNode(node, w, h) {
+			node.used = true;
+			node.down = { x: node.x, y: node.y + h, w: node.w, h: node.h - h };
+			node.right = { x: node.x + w, y: node.y, w: node.w - w, h: h };
+			return node;
 		}
 	};
 
-	(0, _libHooks.before)(tr, 'render', render);
-});
+	THREE.ImageUtils.crossOrigin = '';
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./lib/hooks":9,"./lib/object_grid":10,"./lib/player_utils":11,"./lib/three_utils":12}],9:[function(require,module,exports){
-"use strict";
+	var textureIndexRed = 0;
+	var textureIndexBlue = 0;
+	var tilePadding = 15;
 
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-exports.before = before;
-exports.after = after;
+	var TextureCanvas = (function () {
+		function TextureCanvas(options) {
+			babelHelpers.classCallCheck(this, TextureCanvas);
 
-function before(obj, methodName, callback) {
-	var orig = obj[methodName];
-	obj[methodName] = function () {
-		callback.apply(this, arguments);
-		return orig.apply(this, arguments);
-	};
-}
+			this.metaMap = {};
 
-;
+			this.width = tagpro.TILE_SIZE * 10;
+			this.height = tagpro.TILE_SIZE * 10;
 
-function after(obj, methodName, callback) {
-	var orig = obj[methodName];
-	obj[methodName] = function () {
-		var result = orig.apply(this, arguments);
-		callback.apply(this, arguments);
-		return result;
-	};
-}
+			this.initThree(options);
 
-;
+			this.baseTexture = new PIXI.BaseTexture(this.renderer.domElement);
 
-},{}],10:[function(require,module,exports){
-(function (global){
-"use strict";
+			this.packer = new Packer(this.width, this.height);
+		}
 
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
+		babelHelpers.createClass(TextureCanvas, [{
+			key: 'initThree',
+			value: function initThree(options) {
+				this.renderer = new THREE.WebGLRenderer({
+					alpha: true,
+					antialias: true
+				});
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+				this.renderer.setSize(this.width, this.height);
 
-var _three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
+				var container = document.createElement('div');
+				container.id = 'balls3d-assets';
+				container.style.visibility = 'hidden';
+				container.appendChild(this.renderer.domElement);
+				document.body.appendChild(container);
 
-var _three2 = _interopRequireDefault(_three);
+				this.scene = new THREE.Scene();
 
-function ObjectGrid(options) {
-	_three2["default"].Object3D.call(this);
+				addLightsToScene(this.scene);
 
-	this.cols = options.cols;
-	this.rows = options.rows;
-	this.cellSize = options.cellSize;
+				this.camera = createCamera({
+					width: this.width,
+					height: this.height
+				});
+			}
+		}, {
+			key: 'addPlayer',
+			value: function addPlayer(player) {
+				var _this = this;
 
-	this.type = "ObjectGrid";
+				var texturePath = this.getTexturePathForPlayer(player);
+				loadTextureAsync(texturePath, function (texture) {
+					var sphere = createSphereMesh(texture);
 
-	this._grid = [];
-};
+					_this.scene.add(sphere);
 
-ObjectGrid.prototype = Object.create(_three2["default"].Object3D.prototype);
-ObjectGrid.prototype.constructor = ObjectGrid;
+					_this.metaMap[player.id] = {
+						player: player,
+						sphere: sphere,
+						angle: player.angle,
+						w: tagpro.TILE_SIZE + tilePadding,
+						h: tagpro.TILE_SIZE + tilePadding
+					};
 
-ObjectGrid.prototype.add = function (object) {
-	var idx = this._grid.indexOf(null);
-	if (idx < 0) {
-		idx = this._grid.push(object.uuid) - 1;
-	} else {
-		this._grid[idx] = object.uuid;
+					_this.updateBinPacking();
+
+					_this.baseTexture.dirty();
+				});
+			}
+		}, {
+			key: 'removePlayer',
+			value: function removePlayer(player) {
+				if (!player) {
+					return;
+				}
+
+				var meta = this.metaMap[player.id];
+				this.scene.remove(meta.sphere);
+
+				delete this.metaMap[player.id];
+
+				this.updateBinPacking();
+			}
+		}, {
+			key: 'updatePosition',
+			value: function updatePosition(player) {
+				var meta = this.metaMap[player.id];
+
+				if (!meta) {
+					return;
+				}
+
+				this.rotateSphere(player, meta);
+
+				meta.angle = player.angle;
+
+				this.baseTexture.dirty();
+			}
+		}, {
+			key: 'updateTexture',
+			value: function updateTexture(player) {
+				var _this2 = this;
+
+				var texturePath = this.getTexturePathForPlayer(player);
+				loadTextureAsync(texturePath, function (texture) {
+					var material = _this2.metaMap[player.id].sphere.material;
+					material.map = texture;
+					material.needsUpdate = true;
+				});
+			}
+		}, {
+			key: 'render',
+			value: function render() {
+				this.renderer.render(this.scene, this.camera);
+			}
+		}, {
+			key: 'updateBinPacking',
+			value: function updateBinPacking() {
+				var _this3 = this;
+
+				var metaArray = Object.keys(this.metaMap).map(function (key) {
+					return _this3.metaMap[key];
+				});
+
+				metaArray.forEach(function (p) {
+					delete p.fit;
+				});
+
+				this.packer.fit(metaArray);
+
+				metaArray.forEach(function (p) {
+					if (!p.fit) {
+						return;
+					}
+
+					// only update if packing changed the position
+					if (p.x !== p.fit.x || p.y !== p.fit.y) {
+						p.x = p.fit.x;
+						p.y = p.fit.y;
+
+						var pos = p.sphere.position;
+						pos.x = p.x + p.w / 2;
+						pos.y = p.y + p.w / 2;
+
+						_this3.setPlayerSprite(p.player, {
+							x: p.x,
+							y: p.y,
+							w: p.w,
+							h: p.h
+						});
+					}
+				});
+			}
+		}, {
+			key: 'setPlayerSprite',
+			value: function setPlayerSprite(player, rect) {
+				var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
+				var texture = new PIXI.Texture(this.baseTexture, frame);
+
+				if (tagpro.TILE_SIZE !== rect.w || tagpro.TILE_SIZE !== rect.h) {
+					player.sprites.actualBall.position.x = (tagpro.TILE_SIZE - rect.w) / 2;
+					player.sprites.actualBall.position.y = (tagpro.TILE_SIZE - rect.h) / 2;
+				}
+
+				player.sprites.actualBall.setTexture(texture);
+			}
+		}, {
+			key: 'getTexturePathForPlayer',
+			value: function getTexturePathForPlayer(player) {
+				var texture;
+				if (player.team === 1) {
+					texture = config.texturesRed[textureIndexRed % config.texturesRed.length] || defaults.texturesRed[0];
+					textureIndexRed += 1;
+				} else {
+					texture = config.texturesBlue[textureIndexBlue % config.texturesBlue.length] || defaults.texturesBlue[0];
+					textureIndexBlue += 1;
+				}
+
+				return texture;
+			}
+		}, {
+			key: 'rotateSphere',
+			value: function rotateSphere(player, meta) {
+				if (!meta.sphere) {
+					return;
+				}
+
+				rotateX(meta.sphere, -(player.lx || 0) * 0.1 * config.velocityCoefficient);
+				rotateY(meta.sphere, (player.ly || 0) * 0.1 * config.velocityCoefficient);
+
+				var theta = player.angle - meta.angle;
+				rotateZ(meta.sphere, theta * config.rotationCoefficient);
+			}
+		}]);
+		return TextureCanvas;
+	})();
+
+	function inject3D() {
+		var texture = new TextureCanvas();
+
+		var tr = tagpro.renderer;
+
+		before(tr, 'render', function () {
+			texture.render();
+		});
+
+		after(tr, 'createBallSprite', function (player) {
+			texture.addPlayer(player);
+		});
+
+		after(tr, 'destroyPlayer', function (player) {
+			texture.removePlayer(player);
+		});
+
+		after(tr, 'updatePlayerSpritePosition', function (player) {
+			texture.updatePosition(player);
+		});
+
+		// Replace original tagpro.renderer.updatePlayerColor
+		tr.updatePlayerColor = function (player) {
+			var color = player.team === 1 ? 'red' : 'blue';
+			var tileId = color + 'ball';
+
+			if (player.sprites.actualBall.tileId !== tileId) {
+				texture.updateTexture(player);
+				player.sprites.actualBall.tileId = tileId;
+			}
+		};
 	}
 
-	var col = idx % this.cols;
-	var row = ~ ~(idx / this.cols);
+	var Preview = Ractive.extend({
+		template: '<canvas class="options-3d-preview-ball"></canvas>',
+		onrender: function onrender() {
+			var _this = this;
 
-	var x = col * this.cellSize;
-	var y = row * this.cellSize;
+			var texture = this.get('texture');
 
-	object.position.x = x + this.cellSize / 2;
-	object.position.y = y + this.cellSize / 2;
+			var width = tagpro.TILE_SIZE;
+			var height = tagpro.TILE_SIZE;
 
-	_three2["default"].Object3D.prototype.add.call(this, object);
+			var renderer = new THREE.WebGLRenderer({
+				alpha: true,
+				antialias: true,
+				canvas: this.find('canvas')
+			});
 
-	return {
-		x: x,
-		y: y,
-		width: this.cellSize,
-		height: this.cellSize
-	};
-};
+			renderer.setSize(width, height);
 
-ObjectGrid.prototype.remove = function (object) {
-	var idx = this._grid.indexOf(object.uuid);
+			var scene = new THREE.Scene();
 
-	if (idx < 0) {
-		return;
-	}
+			addLightsToScene(scene);
 
-	this._grid[idx] = null;
+			var camera = createCamera({ width: width, height: height });
 
-	_three2["default"].Object3D.prototype.remove.call(this, object);
-};
+			var loader = new THREE.TextureLoader();
+			loader.setCrossOrigin('');
 
-exports["default"] = ObjectGrid;
-module.exports = exports["default"];
+			loader.load(this.get('texture'), function (texture) {
+				texture.anisotropy = _this.get('options.anisotropy');
+				texture.minFilter = _this.get('options.minFilter');
+				texture.needsUpdate = true;
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
-(function (global){
-'use strict';
+				var geometry = new THREE.SphereGeometry(_this.get('options.sphereRadius'), _this.get('options.sphereWidthSegments'), _this.get('options.sphereHeightSegments'));
 
-Object.defineProperty(exports, '__esModule', {
-	value: true
-});
-exports.createSphereAsync = createSphereAsync;
-exports.rotateSphere = rotateSphere;
-exports.setSprite = setSprite;
-exports.loadTextureAsync = loadTextureAsync;
-exports.updateTexture = updateTexture;
-exports.getTexturePath = getTexturePath;
+				var material = new THREE.MeshPhongMaterial({
+					shading: _this.get('options.sphereShading'),
+					map: texture
+				});
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
+				_this.observe('texture', function (val) {
+					loader.load(val, function (texture) {
+						material.map = texture;
+						material.needsUpdate = true;
+					});
+				});
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+				var sphere = new THREE.Mesh(geometry, material);
+				sphere.position.x = width / 2;
+				sphere.position.y = height / 2;
 
-var _defaults = require('defaults');
+				scene.add(sphere);
 
-var _defaults2 = _interopRequireDefault(_defaults);
+				function render() {
+					rotateX(sphere, 0.02);
+					rotateY(sphere, 0.02);
+					rotateZ(sphere, 0.05);
 
-var _three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
+					renderer.render(scene, camera);
+					window.requestAnimationFrame(render);
+				}
 
-var _three2 = _interopRequireDefault(_three);
-
-var _three_utils = require('./three_utils');
-
-var ThreeUtils = _interopRequireWildcard(_three_utils);
-
-var velocityCoefficient = 0.1;
-var rotationCoefficient = 1.0;
-
-var vecY = new _three2['default'].Vector3(1, 0, 0);
-var vecX = new _three2['default'].Vector3(0, 1, 0);
-var vecZ = new _three2['default'].Vector3(0, 0, 1);
-
-function createSphereAsync(player, callback) {
-	loadTextureAsync(player, function (texture) {
-		var sphere = ThreeUtils.createSphere(texture);
-		callback(sphere);
-	});
-}
-
-;
-
-function rotateSphere(player) {
-	if (!player.sphere) {
-		return;
-	}
-
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecX, -(player.lx || 0) * velocityCoefficient);
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecY, (player.ly || 0) * velocityCoefficient);
-
-	var theta = player.angle - player.lastAngle;
-	ThreeUtils.rotateAroundWorldAxis(player.sphere, vecZ, theta * rotationCoefficient);
-}
-
-function setSprite(player, baseTexture, rect) {
-	var frame = new PIXI.Rectangle(rect.x, rect.y, rect.width, rect.height);
-	var texture = new PIXI.Texture(baseTexture, frame);
-
-	player.sprites.actualBall.setTexture(texture);
-}
-
-function loadTextureAsync(player, callback) {
-	var texturePath = getTexturePath(player);
-	ThreeUtils.loadTextureAsync(texturePath, callback);
-}
-
-function updateTexture(player) {
-	loadTextureAsync(player, function (texture) {
-		player.sphere.material = ThreeUtils.createMaterial(texture);
-	});
-}
-
-;
-
-function getTexturePath(player) {
-	var rootPath = "http://keratagpro.github.io/tagpro-balls-3d/textures/";
-
-	var texturePath = player.team === 1 ? "planets/mars.jpg" : "planets/earth.jpg";
-
-	return rootPath + texturePath;
-}
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./three_utils":12,"defaults":4}],12:[function(require,module,exports){
-(function (global){
-'use strict';
-
-Object.defineProperty(exports, '__esModule', {
-	value: true
-});
-exports.createRenderer = createRenderer;
-exports.addLightsToScene = addLightsToScene;
-exports.createSphere = createSphere;
-exports.loadTextureAsync = loadTextureAsync;
-exports.createCamera = createCamera;
-exports.rotateAroundWorldAxis = rotateAroundWorldAxis;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _objectAssign = require('object-assign');
-
-var _objectAssign2 = _interopRequireDefault(_objectAssign);
-
-var _defaults = require('defaults');
-
-var _defaults2 = _interopRequireDefault(_defaults);
-
-var _three = (typeof window !== "undefined" ? window['THREE'] : typeof global !== "undefined" ? global['THREE'] : null);
-
-var _three2 = _interopRequireDefault(_three);
-
-var rotWorldMatrix;
-
-function createRenderer(options) {
-	options = (0, _defaults2['default'])(options, {
-		alpha: true,
-		antialias: true
+				window.requestAnimationFrame(render);
+			});
+		}
 	});
 
-	return new _three2['default'].WebGLRenderer(options);
-}
+	var TEXTURES_URL = 'http://keratagpro.github.io/tagpro-balls-3d/textures.json';
 
-;
+	var Options = Ractive.extend({
+		data: {
+			showAdvanced: false,
+			options: config,
+			textureFilters: [{ label: 'Nearest', value: THREE.NearestFilter }, { label: 'NearestMipMapNearest', value: THREE.NearestMipMapNearestFilter }, { label: 'NearestMipMapLinear', value: THREE.NearestMipMapLinearFilter }, { label: 'Linear', value: THREE.LinearFilter }, { label: 'LinearMipMapNearest', value: THREE.LinearMipMapNearestFilter }, { label: 'LinearMipMapLinear', value: THREE.LinearMipMapLinearFilter }],
+			materialShadings: [{ label: 'Flat', value: THREE.FlatShading }, { label: 'Smooth', value: THREE.SmoothShading }]
+		},
+		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label>\n\t\t\tRed textures\n\t\t\t<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\tBlue textures\n\t\t\t<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tAdvanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<label>\n\t\t\t\t<span>Velocity coefficient</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Rotation coefficient</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Ambient light color</span>\n\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light color</span>\n\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light position</span>\n\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Light intensity</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Texture.anisotropy</span>\n\t\t\t\t<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}\n\t\t\t</label>\n\n\t\t\t<label>\n\t\t\t\t<span>Texture.minFilter</span>\n\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t{{/each}}\n\t\t\t\t</select>\n\t\t\t</label>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
+		css: '.options-3d-preview {\n\tdisplay: flex;\n}\n\n.options-3d-preview-red,\n.options-3d-preview-blue {\n\tflex: 1;\n\ttext-align: center;\n\tpadding: 3px;\n}\n\n.options-3d-preview-red {\n\tbackground-color: rgba(255, 0, 0, 0.2);\n}\n\n.options-3d-preview-blue {\n\tbackground-color: rgba(0, 0, 255, 0.2);\n}\n\n.options-3d-preview-ball {\n\tvertical-align: middle;\n}\n\n.options-3d {\n\tmargin: 10px auto;\n\twidth: 570px;\n\tbackground-color: #eee;\n\tcolor: #000;\n\tborder-radius: 5px;\n\tborder: 2px solid #333;\n}\n\n\t.options-3d-header {\n\t\tborder-bottom: 1px solid #333;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-header .actions {\n\t\tfloat: right;\n\t\tpadding: 5px;\n\t\tmargin-right: 15px;\n\t}\n\n\t.options-3d-header .text-3d {\n\t\tposition: relative;\n\t\ttop: -3px;\n\t\tleft: -3px;\n\t}\n\n\t.options-3d-header .close {\n\t\tfloat: right;\n\t\ttext-decoration: none;\n\t\tcolor: #333;\n\t\tline-height: 20px;\n\t\tfont-size: 20px;\n\t\tpadding: 5px;\n\t}\n\n\t.options-3d h1,\n\t.options-3d h2,\n\t.options-3d h3 {\n\t\ttext-align: left;\n\t\tmargin: 0;\n\t\tpadding: 0;\n\n\t\t/* override tagpro styles */\n\t\tbackground: none;\n\t\twidth: auto;\n\t\theight: auto;\n\t}\n\n\t.options-3d h1 { font-size: 26px; }\n\t.options-3d h2 { font-size: 14px; }\n\t.options-3d h3 { font-size: 12px; }\n\n\t.options-3d h1 > span,\n\t.options-3d h2 > span,\n\t.options-3d h3 > span {\n\t\tdisplay: inline;\n\t}\n\n.options-3d-content {\n\tpadding: 5px 10px;\n\toverflow: auto;\n}\n\n\t.options-3d-content > label {\n\t\tpadding: 5px;\n\t\tdisplay: block;\n\t}\n\n\t.options-3d-content > label > span {\n\t\tdisplay: inline-block;\n\t\twidth: 180px;\n\t\ttext-align: right;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-content > label > input {\n\t\tvertical-align: middle;\n\t}\n\n\t.options-3d-content a {\n\t\tcolor: black;\n\t}\n\n.options-3d .texture {\n\tdisplay: inline-block;\n\twidth: 100px;\n\theight: 100px;\n\tmargin: 5px;\n}\n\n.options-3d .texture img {\n\twidth: 100%;\n\theight: 100%;\n}\n\n.options-3d .texture-input {\n\twidth: 100%;\n\tbox-sizing: border-box;\n}\n\n.option-thumbnail {\n\tposition: relative;\n\twidth: 50px;\n\theight: 50px;\n\toverflow: hidden;\n\tdisplay: inline-block;\n\tvertical-align: middle;\n\tmargin-right: 5px;\n}\n\n\t.option-thumbnail img {\n\t\tposition: absolute;\n\t\tleft: 50%;\n\t\ttop: 50%;\n\t\theight: 100%;\n\t\twidth: auto;\n\t\ttransform: translate(-50%, -50%);\n\t}\n\n.option-item-image {\n\twidth: 20px;\n\theight: 20px;\n\tvertical-align: middle;\n\tpadding-right: 5px;\n}\n\n.selectize-control {\n\tposition: static;\n}\n\n.selectize-dropdown [data-selectable] {\n\twhite-space: nowrap;\n\t/*display: inline-block;*/\n}',
+		noCssTransform: true,
+		computed: {
+			blueTexturesString: {
+				get: '${options.texturesBlue}.join(",")',
+				set: function set(val) {
+					this.set('options.texturesBlue', val.split(',').filter(function (v) {
+						return !!v;
+					}));
+				}
+			},
+			redTexturesString: {
+				get: '${options.texturesRed}.join(",")',
+				set: function set(val) {
+					this.set('options.texturesRed', val.split(',').filter(function (v) {
+						return !!v;
+					}));
+				}
+			},
+			ambientLightColorHex: {
+				get: function get() {
+					var val = this.get('options.ambientLightColor');
+					var color = new THREE.Color(val);
+					return '#' + color.getHexString();
+				},
+				set: function set(val) {
+					var color = new THREE.Color(val);
+					this.set('options.ambientLightColor', color.getHex());
+				}
+			},
+			lightColorHex: {
+				get: function get() {
+					var val = this.get('options.lightColor');
+					var color = new THREE.Color(val);
+					return '#' + color.getHexString();
+				},
+				set: function set(val) {
+					var color = new THREE.Color(val);
+					this.set('options.lightColor', color.getHex());
+				}
+			}
+		},
+		oninit: function oninit() {
+			this.observe('options.*', function (val, oldVal, keypath) {
+				var key = keypath.replace('options.', '');
 
-function addLightsToScene(scene, options) {
-	options = (0, _defaults2['default'])(options, {
-		ambientColor: 0x888888,
-		color: 0xcccccc,
-		position: [-200, -200, -400],
-		intensity: 0.8
+				if (val === defaults[key]) {
+					Storage.removeItem(key);
+				} else {
+					Storage.setItem(key, val);
+				}
+			}, { init: false });
+
+			this.on('reset-options', function () {
+				Storage.clear();
+				this.set('options', $.extend(true, {}, defaults));
+
+				$('input.texture-select').each(function () {
+					this.selectize.setValue(this.value, true);
+				});
+			});
+		},
+		onrender: function onrender() {
+			var _this = this;
+
+			$.getJSON(TEXTURES_URL).done(function (textures) {
+				createSelectize(textures, _this);
+			});
+		},
+		components: {
+			Preview: Preview
+		}
 	});
 
-	var light = new _three2['default'].AmbientLight(options.ambientColor);
-	scene.add(light);
-
-	var light = new _three2['default'].DirectionalLight(options.hex, options.intensity);
-	light.position.set.apply(light.position, options.position);
-
-	scene.add(light);
-}
-
-function createSphere(texture) {
-	var options = {
-		radius: 19,
-		widthSegments: 16,
-		heightSegments: 12
+	var DEFAULTS = {
+		duration: 300,
+		easing: 'easeInOut'
 	};
 
-	var geometry = new _three2['default'].SphereGeometry(options.radius, options.widthSegments, options.heightSegments);
+	var PROPS = ['height', 'borderTopWidth', 'borderBottomWidth', 'paddingTop', 'paddingBottom', 'marginTop', 'marginBottom'];
 
-	var material = new _three2['default'].MeshPhongMaterial({
-		shading: _three2['default'].SmoothShading,
-		map: texture
-	});
+	var COLLAPSED = {
+		height: 0,
+		borderTopWidth: 0,
+		borderBottomWidth: 0,
+		paddingTop: 0,
+		paddingBottom: 0,
+		marginTop: 0,
+		marginBottom: 0
+	};
+	function slide(t, params) {
+		var targetStyle;
 
-	return new _three2['default'].Mesh(geometry, material);
-}
+		params = t.processParams(params, DEFAULTS);
 
-;
+		if (t.isIntro) {
+			targetStyle = t.getStyle(PROPS);
+			t.setStyle(COLLAPSED);
+		} else {
+			// make style explicit, so we're not transitioning to 'auto'
+			t.setStyle(t.getStyle(PROPS));
+			targetStyle = COLLAPSED;
+		}
 
-function loadTextureAsync(texturePath, callback) {
-	_three2['default'].ImageUtils.loadTexture(texturePath, undefined, function (texture) {
-		texture.anisotropy = 1;
-		texture.minFilter = _three2['default'].LinearFilter;
+		t.setStyle('overflowY', 'hidden');
 
-		callback(texture);
-	});
-}
-
-;
-
-function createCamera(options) {
-	options = (0, _defaults2['default'])(options, {
-		width: 400,
-		height: 400
-	});
-
-	var camera = new _three2['default'].OrthographicCamera(-options.width / 2, options.width / 2, -options.height / 2, options.height / 2, 1, 1000);
-
-	camera.position.z = 900;
-
-	// camera.up = new THREE.Vector3(0, 1, 0);
-	camera.lookAt(new _three2['default'].Vector3(0, 0, 0));
-
-	camera.position.x = options.width / 2;
-	camera.position.y = options.height / 2;
-
-	return camera;
-}
-
-// Rotate an object around an arbitrary axis in world space      
-
-function rotateAroundWorldAxis(object, axis, radians) {
-	if (radians === 0 || isNaN(radians)) {
-		return;
+		t.animateStyle(targetStyle, params).then(t.complete);
 	}
 
-	rotWorldMatrix = new _three2['default'].Matrix4();
-	rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
-	rotWorldMatrix.multiply(object.matrix); // pre-multiply
-	object.matrix = rotWorldMatrix;
-	object.rotation.setFromRotationMatrix(object.matrix);
-}
+	// Check if is in game
+	if (tagpro.state > 0) {
+		inject3D();
+	} else if (location.pathname === '/') {
+		GM_addStyle('\n\t\tbody {\n\t\t\toverflow: visible;\n\t\t}\n\n\t\t.text-3d {\n\t\t\tcolor: #ACE600;\n\t\t\ttext-shadow: 1px 1px #608100, 2px 2px #608100, 3px 3px #608100;\n\t\t}\n\n\t\t.balls3d-button {\n\t\t\tmargin-left: 10px;\n\t\t\tmargin-right: 10px;\n\t\t}\n\n\t\t.balls3d-button.active {\n\t\t\ttext-decoration: underline;\n\t\t}\n\t');
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"defaults":4,"object-assign":7}]},{},[8]);
+		initSelectize().then(function () {
+			var $existingLink = $('a:contains("Map Statistics")');
+
+			var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
+
+			tagpro.balls3d = new Ractive({
+				el: $elem,
+				data: {
+					showOptions: false
+				},
+				template: '{{#if showOptions}}<div intro-outro="slide"><Options /></div>{{/if}}',
+				components: {
+					Options: Options
+				},
+				oninit: function oninit() {
+					this.on('Options.close', function () {
+						this.set('showOptions', false);
+					});
+				},
+				transitions: {
+					slide: slide
+				}
+			});
+
+			var $a = $('<a href="#" class="balls3d-button">3D settings</a>').on('click', function () {
+				tagpro.balls3d.toggle('showOptions');
+				$(this).toggleClass('active', tagpro.balls3d.get('showOptions'));
+			});
+
+			$a.insertBefore($existingLink);
+		});
+	}
+
+})($,Ractive,THREE,this.PIXI || {});
+});
