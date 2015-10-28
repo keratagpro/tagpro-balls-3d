@@ -1,55 +1,66 @@
 import $ from 'jquery';
 import Ractive from 'ractive';
 
-import { before, after } from './lib/hooks';
+import inject3D from './lib/inject_3d';
 import { initSelectize } from './lib/selectize_utils';
-import TextureCanvas from './lib/texture_canvas';
 import Options from './components/options';
+import slide from './transitions/slide';
 
-function init() {
-	var texture = new TextureCanvas();
-
-	var tr = tagpro.renderer;
-
-	before(tr, 'render', function() {
-		texture.render();
-	});
-
-	after(tr, 'createBallSprite', function(player) {
-		texture.addPlayer(player);
-	});
-
-	after(tr, 'destroyPlayer', function(player) {
-		texture.removePlayer(player);
-	});
-
-	after(tr, 'updatePlayerSpritePosition', function(player) {
-		texture.updatePosition(player);
-	});
-
-	// Replace original tagpro.renderer.updatePlayerColor
-	tr.updatePlayerColor = function(player) {
-		var color = player.team === 1 ? 'red' : 'blue';
-		var tileId = color + 'ball';
-
-		if (player.sprites.actualBall.tileId !== tileId) {
-			texture.updateTexture(player);
-			player.sprites.actualBall.tileId = tileId;
-		}
-	};
-
-	var elem = $('<div id="balls3d-options"></div>').appendTo(document.body);
-	var ractive = new Ractive({
-		el: elem,
-		template: '<Options />',
-		components: {
-			Options
-		}
-	});
-
-	tagpro.ractive = ractive;
+// Check if is in game
+if (tagpro.state > 0) {
+	inject3D();
 }
+else if (location.pathname === '/') {
+	GM_addStyle(`
+		body {
+			overflow: visible;
+		}
 
-initSelectize().then(function() {
-	tagpro.ready(init);
-});
+		.text-3d {
+			color: #ACE600;
+			text-shadow: 1px 1px #608100, 2px 2px #608100, 3px 3px #608100;
+		}
+
+		.balls3d-button {
+			margin-left: 10px;
+			margin-right: 10px;
+		}
+
+		.balls3d-button.active {
+			text-decoration: underline;
+		}
+	`);
+
+	initSelectize().then(function() {
+		var $existingLink = $('a:contains("Map Statistics")');
+
+		var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
+
+		tagpro.balls3d = new Ractive({
+			el: $elem,
+			data: {
+				showOptions: false
+			},
+			template: '{{#if showOptions}}<div intro-outro="slide"><Options /></div>{{/if}}',
+			components: {
+				Options
+			},
+			oninit: function() {
+				this.on('Options.close', function() {
+					this.set('showOptions', false);
+				});
+			},
+			transitions: {
+				slide
+			}
+		});
+
+		var $a = $('<a href="#" class="balls3d-button">3D settings</a>')
+			.on('click', function () {
+				tagpro.balls3d.toggle('showOptions');
+				$(this).toggleClass('active', tagpro.balls3d.get('showOptions'));
+			});
+
+		$a.insertBefore($existingLink);
+	});
+}

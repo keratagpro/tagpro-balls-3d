@@ -1,31 +1,35 @@
-#balls-3d-assets {
-	position: absolute;
-	visibility: hidden;
-	z-index: -1;
+.options-3d-preview {
+	display: flex;
+}
+
+.options-3d-preview-red,
+.options-3d-preview-blue {
+	flex: 1;
+	text-align: center;
+	padding: 3px;
+}
+
+.options-3d-preview-red {
+	background-color: rgba(255, 0, 0, 0.2);
+}
+
+.options-3d-preview-blue {
+	background-color: rgba(0, 0, 255, 0.2);
+}
+
+.options-3d-preview-ball {
+	vertical-align: middle;
 }
 
 .options-3d {
-	position: absolute;
-	bottom: 10px;
-	right: 10px;
-}
-
-.options-3d-button {
-	font-size: 20px;
-	text-decoration: none;
-	float: right;
-
-	opacity: 1;
-	transition: opacity 1s;
-}
-
-.options-3d-window {
-	background-color: #fff;
+	margin: 10px auto;
+	width: 570px;
+	background-color: #eee;
 	color: #000;
-	width: 500px;
-	border-radius: 3px;
+	border-radius: 5px;
 	border: 2px solid #333;
 }
+
 	.options-3d-header {
 		border-bottom: 1px solid #333;
 		padding: 5px 10px;
@@ -37,13 +41,6 @@
 		margin-right: 15px;
 	}
 
-	.options-3d-header .actions .reset {
-		color: #ccc;
-		font-size: 80%;
-		line-height: 20px;
-		text-decoration: none;
-	}
-
 	.options-3d-header .text-3d {
 		position: relative;
 		top: -3px;
@@ -53,7 +50,7 @@
 	.options-3d-header .close {
 		float: right;
 		text-decoration: none;
-		color: #ccc;
+		color: #333;
 		line-height: 20px;
 		font-size: 20px;
 		padding: 5px;
@@ -62,6 +59,7 @@
 	.options-3d h1,
 	.options-3d h2,
 	.options-3d h3 {
+		text-align: left;
 		margin: 0;
 		padding: 0;
 
@@ -83,12 +81,23 @@
 
 .options-3d-content {
 	padding: 5px 10px;
-	max-height: 500px;
 	overflow: auto;
 }
 
-	.options-3d-content label {
+	.options-3d-content > label {
+		padding: 5px;
 		display: block;
+	}
+
+	.options-3d-content > label > span {
+		display: inline-block;
+		width: 180px;
+		text-align: right;
+		padding: 5px 10px;
+	}
+
+	.options-3d-content > label > input {
+		vertical-align: middle;
 	}
 
 	.options-3d-content a {
@@ -107,38 +116,29 @@
 	height: 100%;
 }
 
-.options-3d .texture-input-wrapper {
-	padding: 5px;
-}
-
 .options-3d .texture-input {
 	width: 100%;
 	box-sizing: border-box;
 }
 
-.text-3d {
-	color: #ACE600;
-		text-shadow: 1px 1px #608100,
-		2px 2px #608100,
-		3px 3px #608100;
-}
-
-.options-3d .hidden {
-	display: none;
-}
-
-.options-3d .invisible {
-	opacity: 0;
-}
-
-.option-image {
+.option-thumbnail {
+	position: relative;
 	width: 50px;
 	height: 50px;
+	overflow: hidden;
+	display: inline-block;
 	vertical-align: middle;
-	padding-right: 5px;
+	margin-right: 5px;
 }
 
-.option-label { }
+	.option-thumbnail img {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		height: 100%;
+		width: auto;
+		transform: translate(-50%, -50%);
+	}
 
 .option-item-image {
 	width: 20px;

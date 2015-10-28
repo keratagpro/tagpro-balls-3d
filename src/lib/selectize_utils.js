@@ -1,37 +1,13 @@
 import $ from 'jquery';
 import { injectCSS, injectScript } from './inject_utils';
 
-function forceTop() {
-	// HACK: Add way to open Selectize dropdown up
-	Selectize.prototype.positionDropdown = function() {
-		var $control = this.$control;
-		var offset = this.settings.dropdownParent === 'body' ? $control.offset() : $control.position();
-		var top = offset.top;
-		offset.top += $control.outerHeight(true);
-
-		this.$dropdown.css({
-			width : $control.outerWidth(),
-			left  : offset.left
-		});
-
-		var dir = this.settings.dropdownDirection;
-		if (dir === 'up') {
-			this.$dropdown.css('top', top - this.$dropdown.outerHeight(true));
-		}
-		else {
-			this.$dropdown.css('top', offset.top);
-		}
-	};
-}
-
 export function initSelectize() {
-	injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css');
+	injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.legacy.min.css');
 	injectScript('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js');
 
 	return new Promise(function(resolve, reject) {
 		(function checkSelectize() {
 			if (typeof(Selectize) !== 'undefined') {
-				forceTop();
 				resolve();
 			}
 			else {
@@ -94,7 +70,7 @@ export function createSelectize(textures, ractive) {
 			},
 			option: function(item, escape) {
 				return '<div>' +
-					'<img class="option-image" src="' + item.path + '" />' +
+					'<div class="option-thumbnail"><img src="' + item.path + '" /></div>' +
 					(item.name ? '<span class="option-label">' + escape(item.name) + '</span>' : '') +
 				'</div>';
 			}

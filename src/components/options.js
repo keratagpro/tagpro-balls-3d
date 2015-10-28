@@ -5,24 +5,25 @@ import THREE from 'three';
 import { createSelectize } from '../lib/selectize_utils';
 import config, { defaults } from '../lib/config';
 import Storage from '../lib/storage';
+import Preview from './preview';
 
 const TEXTURES_URL = 'http://keratagpro.github.io/tagpro-balls-3d/textures.json';
 
 export default Ractive.extend({
 	data: {
-		showOptions: false,
+		showAdvanced: false,
 		options: config,
 		textureFilters: [
-			{ label: "Nearest", value: THREE.NearestFilter },
-			{ label: "NearestMipMapNearest", value: THREE.NearestMipMapNearestFilter },
-			{ label: "NearestMipMapLinear", value: THREE.NearestMipMapLinearFilter },
-			{ label: "Linear", value: THREE.LinearFilter },
-			{ label: "LinearMipMapNearest", value: THREE.LinearMipMapNearestFilter },
-			{ label: "LinearMipMapLinear", value: THREE.LinearMipMapLinearFilter }
+			{ label: 'Nearest', value: THREE.NearestFilter },
+			{ label: 'NearestMipMapNearest', value: THREE.NearestMipMapNearestFilter },
+			{ label: 'NearestMipMapLinear', value: THREE.NearestMipMapLinearFilter },
+			{ label: 'Linear', value: THREE.LinearFilter },
+			{ label: 'LinearMipMapNearest', value: THREE.LinearMipMapNearestFilter },
+			{ label: 'LinearMipMapLinear', value: THREE.LinearMipMapLinearFilter }
 		],
 		materialShadings: [
-			{ label: "Flat", value: THREE.FlatShading },
-			{ label: "Smooth", value: THREE.SmoothShading }
+			{ label: 'Flat', value: THREE.FlatShading },
+			{ label: 'Smooth', value: THREE.SmoothShading }
 		]
 	},
 	template: `OPTIONS_HTML`,
@@ -32,19 +33,13 @@ export default Ractive.extend({
 		blueTexturesString: {
 			get: '${options.texturesBlue}.join(",")',
 			set: function(val) {
-				this.set('options.texturesBlue', val.split(','));
+				this.set('options.texturesBlue', val.split(',').filter(function(v) { return !!v; }));
 			}
 		},
 		redTexturesString: {
 			get: '${options.texturesRed}.join(",")',
 			set: function(val) {
-				this.set('options.texturesRed', val.split(','));
-			}
-		},
-		lightPositionString: {
-			get: '${options.lightPosition}.join(",")',
-			set: function(val) {
-				this.set('options.lightPosition', val.split(',').map(v => parseInt(v, 10)));
+				this.set('options.texturesRed', val.split(',').filter(function(v) { return !!v; }));
 			}
 		},
 		ambientLightColorHex: {
@@ -71,20 +66,6 @@ export default Ractive.extend({
 		}
 	},
 	oninit: function() {
-		var mouseMoveTimeout;
-		var self = this;
-		$(window).on('mousemove', function(ev) {
-			self.set('mouseMoved', true);
-
-			if (mouseMoveTimeout) {
-				clearTimeout(mouseMoveTimeout);
-			}
-
-			mouseMoveTimeout = setTimeout(function() {
-				self.set('mouseMoved', false);
-			}, 1000);
-		});
-
 		this.observe('options.*', function(val, oldVal, keypath) {
 			var key = keypath.replace('options.', '');
 
@@ -98,12 +79,19 @@ export default Ractive.extend({
 
 		this.on('reset-options', function() {
 			Storage.clear();
-			this.set('options', defaults);
+			this.set('options', $.extend(true, {}, defaults));
+
+			$('input.texture-select').each(function() {
+				this.selectize.setValue(this.value, true);
+			});
 		});
 	},
 	onrender: function() {
 		$.getJSON(TEXTURES_URL).done(textures => {
 			createSelectize(textures, this);
 		});
+	},
+	components: {
+		Preview
 	}
 });

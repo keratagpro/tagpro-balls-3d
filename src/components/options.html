@@ -1,106 +1,92 @@
 <div class="options-3d">
-	<div class="options-3d-window {{showOptions ? '' : 'hidden'}}">
-		<div class="options-3d-header">
-			<a href="#" class="close" on-click="set('showOptions', false)">&times;</a>
-			<div class="actions">
-				<a class="reset" href="#" on-click="reset-options">Reset</a>
-			</div>
-			<h1>
-				<span class="text-3d">Balls 3D</span> Options
-			</h1>
+	<div class="options-3d-header">
+		<a href="#" class="close" on-click="close">&times;</a>
+		<div class="actions">
+			<button class="reset" on-click="reset-options">Reset</button>
 		</div>
-
-		{{#with options}}
-		<div class="options-3d-content">
-			<label class="texture-input-wrapper">
-				Blue textures
-
-				<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />
-			</label>
-
-			<label class="texture-input-wrapper">
-				Red textures
-				<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />
-			</label>
-
-			<a href="#" on-click="toggle('showAdvanced')">Advanced options</a>
-
-			{{#if showAdvanced}}
-			<fieldset>
-				<label>
-					Velocity coefficient
-					<input type="range" min="0" max="3" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
-				</label>
-
-				<label>
-					Rotation coefficient
-					<input type="range" min="0" max="3" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
-				</label>
-
-				<label>
-					Ambient light color
-					<input type="color" value="{{ambientLightColorHex}}">
-				</label>
-
-				<label>
-					Light color
-					<input type="color" value="{{lightColorHex}}">
-				</label>
-
-				<label>
-					Light position
-					<input type="text" value="{{lightPositionString}}">
-				</label>
-
-				<label>
-					Light intensity
-					<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}
-				</label>
-
-				<label>
-					Texture.anisotropy
-					<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}
-				</label>
-
-				<label>
-					Texture.minFilter
-					<select value="{{minFilter}}">
-						{{#each textureFilters}}
-							<option value="{{value}}">{{label}}</option>
-						{{/each}}
-					</select>
-				</label>
-
-				<label>
-					Sphere radius
-					<input type="range" min="1" max="30" step="0.1" value="{{sphereRadius}}"> {{sphereRadius}}
-				</label>
-
-				<label>
-					Sphere width segments
-					<input type="range" min="3" max="100" value="{{sphereWidthSegments}}"> {{sphereWidthSegments}}
-				</label>
-
-				<label>
-					Sphere height segments
-					<input type="range" min="2" max="100" value="{{sphereHeightSegments}}"> {{sphereHeightSegments}}
-				</label>
-
-				<label>
-					Sphere shading
-					<select value="{{sphereShading}}">
-						{{#each materialShadings}}
-							<option value="{{value}}">{{label}}</option>
-						{{/each}}
-					</select>
-				</label>
-			</fieldset>
-			{{/if}}
-		</div>
-		{{/with}}
+		<h1>
+			<span class="text-3d">Balls 3D</span> Settings
+		</h1>
 	</div>
 
-	<a href="#" on-click="toggle('showOptions')" class="options-3d-button text-3d {{mouseMoved ? '' : 'invisible'}}">
-		3D
-	</a>
+	{{#with options}}
+	<div class="options-3d-content">
+		<div class="options-3d-preview">
+			<label class="options-3d-preview-red">
+				{{#each options.texturesRed}}
+					<Preview texture="{{.}}" />
+				{{/each}}
+			</label>
+
+			<label class="options-3d-preview-blue">
+				{{#each options.texturesBlue}}
+					<Preview texture="{{.}}" />
+				{{/each}}
+			</label>
+		</div>
+
+		<label>
+			Red textures
+			<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />
+		</label>
+
+		<label>
+			Blue textures
+			<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />
+		</label>
+
+		<label>
+			<input type="checkbox" checked="{{showAdvanced}}">
+			Advanced options
+		</label>
+
+		{{#if showAdvanced}}
+			<label>
+				<span>Velocity coefficient</span>
+				<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
+			</label>
+
+			<label>
+				<span>Rotation coefficient</span>
+				<input type="range" min="0" max="2" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
+			</label>
+
+			<label>
+				<span>Ambient light color</span>
+				<input type="color" value="{{ambientLightColorHex}}">
+			</label>
+
+			<label>
+				<span>Light color</span>
+				<input type="color" value="{{lightColorHex}}">
+			</label>
+
+			<label>
+				<span>Light position</span>
+				x <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">
+				y <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">
+				z <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">
+			</label>
+
+			<label>
+				<span>Light intensity</span>
+				<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}
+			</label>
+
+			<label>
+				<span>Texture.anisotropy</span>
+				<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}
+			</label>
+
+			<label>
+				<span>Texture.minFilter</span>
+				<select value="{{minFilter}}">
+					{{#each textureFilters}}
+						<option value="{{value}}">{{label}}</option>
+					{{/each}}
+				</select>
+			</label>
+		{{/if}}
+	</div>
+	{{/with}}
 </div>

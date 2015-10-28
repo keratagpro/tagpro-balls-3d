@@ -34,7 +34,8 @@ export default class TextureCanvas {
 		this.renderer.setSize(this.width, this.height);
 
 		var container = document.createElement('div');
-		container.id = 'balls-3d-assets';
+		container.id = 'balls3d-assets';
+		container.style.visibility = 'hidden';
 		container.appendChild(this.renderer.domElement);
 		document.body.appendChild(container);
 
@@ -150,7 +151,7 @@ export default class TextureCanvas {
 			player.sprites.actualBall.position.x = (tagpro.TILE_SIZE - rect.w) / 2;
 			player.sprites.actualBall.position.y = (tagpro.TILE_SIZE - rect.h) / 2;
 		}
-		
+
 		player.sprites.actualBall.setTexture(texture);
 	}
 
@@ -173,8 +174,8 @@ export default class TextureCanvas {
 			return;
 		}
 
-		ThreeUtils.rotateX(meta.sphere, -(player.lx || 0) * config.velocityCoefficient);
-		ThreeUtils.rotateY(meta.sphere, (player.ly || 0) * config.velocityCoefficient);
+		ThreeUtils.rotateX(meta.sphere, -(player.lx || 0) * 0.1 * config.velocityCoefficient);
+		ThreeUtils.rotateY(meta.sphere, (player.ly || 0) * 0.1 * config.velocityCoefficient);
 
 		var theta = player.angle - meta.angle;
 		ThreeUtils.rotateZ(meta.sphere, theta * config.rotationCoefficient);
