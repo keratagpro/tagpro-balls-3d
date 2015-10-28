@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name          TagPro Balls 3D
 // @description   Replaces ball sprites with rotating 3D ball sprites using THREE.js.
-// @version       0.3.4
+// @version       0.4.0
 // @author        Kera
 // @grant         GM_addStyle
 // @grant         GM_getValue
 // @grant         GM_setValue
 // @grant         GM_deleteValue
 // @grant         GM_listValues
-// @namespace     https://github.com/keratagpro/tagpro-balls-3d/
+// @namespace     http://github.com/keratagpro/tagpro-balls-3d/
 // @downloadUrl   https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.user.js
 // @updateUrl     https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.meta.js
 // @include       http://tagpro-*.koalabeast.com*
