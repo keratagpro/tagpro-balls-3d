@@ -8,7 +8,8 @@
 // @grant         GM_setValue
 // @grant         GM_deleteValue
 // @grant         GM_listValues
-// @namespace     http://github.com/keratagpro/tagpro-balls-3d/
+// @namespace     https://github.com/keratagpro/tagpro-balls-3d/
+// @icon          https://keratagpro.github.io/tagpro-balls-3d/ball.png
 // @downloadUrl   https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.user.js
 // @updateUrl     https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.meta.js
 // @include       http://tagpro-*.koalabeast.com*
