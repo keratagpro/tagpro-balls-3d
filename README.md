@@ -10,6 +10,8 @@ Replaces ball textures with a live 3D texture using [three.js](http://threejs.or
 2. Open [tagpro-balls-3d.user.js](https://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.user.js)
 3. Enjoy!
 
+**NOTE:** You should disable ball spin userscripts if you have them. 
+
 ## Examples
 
 *Options window*
