@@ -12,6 +12,12 @@ const TEXTURES_URL = 'http://keratagpro.github.io/tagpro-balls-3d/textures.json'
 export default Ractive.extend({
 	data: {
 		showAdvanced: false,
+		isChanged: function(option) {
+			var val = this.get('options.' + option);
+			var def = defaults[option];
+
+			return val.toString() !== def.toString();
+		},
 		options: config,
 		textureFilters: [
 			{ label: 'Nearest', value: THREE.NearestFilter },
@@ -25,6 +31,10 @@ export default Ractive.extend({
 			{ label: 'Flat', value: THREE.FlatShading },
 			{ label: 'Smooth', value: THREE.SmoothShading }
 		]
+	},
+	resetOption: function(option) {
+		this.set('options.' + option, defaults[option]);
+		this.event.original.preventDefault();
 	},
 	template: `OPTIONS_HTML`,
 	css: `OPTIONS_CSS`,

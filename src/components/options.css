@@ -93,12 +93,27 @@
 		display: block;
 	}
 
-	.options-3d-content > label > span {
-		display: inline-block;
-		width: 180px;
-		text-align: right;
-		padding: 5px 10px;
-	}
+		.options-3d-content > label > span > .reset {
+			display: none;
+		}
+
+		.options-3d-content > label.changed > span > .reset {
+			display: block;
+			float: left;
+			text-decoration: none;
+			color: #aaa;
+		}
+
+		.options-3d-content > label > span {
+			display: inline-block;
+			width: 180px;
+			text-align: right;
+			padding: 5px 10px;
+		}
+
+		.options-3d-content > label.changed > span {
+			font-style: italic;
+		}
 
 	.options-3d-content > label > input {
 		vertical-align: middle;
