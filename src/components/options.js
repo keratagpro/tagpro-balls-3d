@@ -33,13 +33,13 @@ export default Ractive.extend({
 		blueTexturesString: {
 			get: '${options.texturesBlue}.join(",")',
 			set: function(val) {
-				this.set('options.texturesBlue', val.split(',').filter(function(v) { return !!v; }));
+				this.set('options.texturesBlue', val.split(',').filter(v => !!v));
 			}
 		},
 		redTexturesString: {
 			get: '${options.texturesRed}.join(",")',
 			set: function(val) {
-				this.set('options.texturesRed', val.split(',').filter(function(v) { return !!v; }));
+				this.set('options.texturesRed', val.split(',').filter(v => !!v));
 			}
 		},
 		ambientLightColorHex: {
