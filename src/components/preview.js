@@ -6,15 +6,14 @@ import * as ThreeUtils from '../lib/three_utils';
 export default Ractive.extend({
 	template: '<canvas class="options-3d-preview-ball"></canvas>',
 	onrender: function() {
-		var width = tagpro.TILE_SIZE - 2;
-		var height = tagpro.TILE_SIZE - 2;
+		var width = tagpro.TILE_SIZE;
+		var height = tagpro.TILE_SIZE;
 
 		var renderer = new THREE.WebGLRenderer({
-			alpha: false,
+			alpha: true,
 			antialias: true,
 			canvas: this.find('canvas')
 		});
-		renderer.setClearColor( 0xffffff );
 
 		renderer.setSize(width, height);
 
@@ -68,34 +67,16 @@ export default Ractive.extend({
 
 			scene.add(sphere);
 
-			var axis = new THREE.Vector3(1, 1, 0);
-			if (this.get('texture').indexOf('earth') !== -1) {
-  				var len = 16;
-				for (var i = 0; i < len; i++) {
-					renderer.render(scene, camera);
+			function render() {
+				ThreeUtils.rotateX(sphere, 0.02);
+				ThreeUtils.rotateY(sphere, 0.02);
+				ThreeUtils.rotateZ(sphere, 0.02);
 
-					var evt = document.createEvent('HTMLEvents');
-	  				evt.initEvent('click');
-
-					var link = document.createElement('a');
-					link.href = renderer.domElement.toDataURL();
-					link.download = 'ball-' + (('00' + (len - i)).slice(-2)) + '.png';
-					link.dispatchEvent(evt);
-					ThreeUtils.rotateAroundWorldAxis(sphere, axis, 2 * Math.PI / len);
-				}
-			}
-			else {
-				function render() {
-					ThreeUtils.rotateX(sphere, 0.02);
-					// ThreeUtils.rotateY(sphere, 0.02);
-					// ThreeUtils.rotateZ(sphere, 0.02);
-
-					renderer.render(scene, camera);
-					window.requestAnimationFrame(render);
-				}
-
+				renderer.render(scene, camera);
 				window.requestAnimationFrame(render);
 			}
+
+			window.requestAnimationFrame(render);
 		});
 	}
 });

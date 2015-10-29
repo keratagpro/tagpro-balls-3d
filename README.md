@@ -2,16 +2,20 @@
 
 Download: http://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.user.js
 
+### Screenshots & Videos
+
+*Options window*
+
 ![demo](example/options.jpg)
 
-### Example Videos
+*Mars vs Earth*
 
-Mars vs Earth
 [![demo](example/screenshot.jpg)](https://youtu.be/qz5qbVOoMjM)
 
-Basket ball vs Beach ball
+*Basket ball vs Beach ball*
+ 
 [![demo](example/screenshot2.jpg)](https://youtu.be/RZZtSZZUixg)
 
-Example (older version): http://gfycat.com/GrandioseDistinctFlyingfox
+*Alpha version*
 
-Documentation & more examples coming later.
+http://gfycat.com/GrandioseDistinctFlyingfox
