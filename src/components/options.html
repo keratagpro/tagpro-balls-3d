@@ -55,13 +55,11 @@
 					<a href="#" class="reset" on-click="resetOption('textureSelection')" title="Reset to default">&times;</a>
 					Texture selection
 				</span>
-				<div>
-					<select value="{{textureSelection}}">
-						<option value="default">in order</option>
-						<option value="random">random</option>
-						<option value="singleRandom">random per team</option>
-					</select>
-				</div>
+				<select value="{{textureSelection}}">
+					<option value="default">in order</option>
+					<option value="random">random</option>
+					<option value="singleRandom">random per team</option>
+				</select>
 			</label>
 
 			<label class="{{isChanged('velocityCoefficient') ? 'changed' : ''}}">
