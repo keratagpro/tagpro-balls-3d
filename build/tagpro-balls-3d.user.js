@@ -141,9 +141,11 @@
 	var loader = new THREE.TextureLoader();
 	loader.setCrossOrigin('');
 
-	var rotWorldMatrix;
-	var vecY = new THREE.Vector3(1, 0, 0);
+	// var rotWorldMatrix;
+	var quaternion = new THREE.Quaternion();
+
 	var vecX = new THREE.Vector3(0, 1, 0);
+	var vecY = new THREE.Vector3(1, 0, 0);
 	var vecZ = new THREE.Vector3(0, 0, 1);
 
 	function addLightsToScene(scene) {
@@ -197,11 +199,14 @@
 			return;
 		}
 
-		rotWorldMatrix = new THREE.Matrix4();
-		rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
-		rotWorldMatrix.multiply(object.matrix); // pre-multiply
-		object.matrix = rotWorldMatrix;
-		object.rotation.setFromRotationMatrix(object.matrix);
+		quaternion.setFromAxisAngle(axis, radians);
+		object.quaternion.multiplyQuaternions(quaternion, object.quaternion);
+
+		// rotWorldMatrix = new THREE.Matrix4();
+		// rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+		// rotWorldMatrix.multiply(object.matrix); // pre-multiply
+		// object.matrix = rotWorldMatrix;
+		// object.rotation.setFromRotationMatrix(object.matrix);
 	}
 
 	function rotateX(object, radians) {
@@ -618,14 +623,15 @@
 		onrender: function onrender() {
 			var _this = this;
 
-			var width = tagpro.TILE_SIZE;
-			var height = tagpro.TILE_SIZE;
+			var width = tagpro.TILE_SIZE - 2;
+			var height = tagpro.TILE_SIZE - 2;
 
 			var renderer = new THREE.WebGLRenderer({
-				alpha: true,
+				alpha: false,
 				antialias: true,
 				canvas: this.find('canvas')
 			});
+			renderer.setClearColor(0xffffff);
 
 			renderer.setSize(width, height);
 
@@ -675,16 +681,35 @@
 
 				scene.add(sphere);
 
-				function render() {
-					rotateX(sphere, 0.02);
-					rotateY(sphere, 0.02);
-					rotateZ(sphere, 0.02);
+				var axis = new THREE.Vector3(1, 1, 0);
+				if (_this.get('texture').indexOf('earth') !== -1) {
+					var len = 16;
+					for (var i = 0; i < len; i++) {
+						renderer.render(scene, camera);
 
-					renderer.render(scene, camera);
-					window.requestAnimationFrame(render);
+						var evt = document.createEvent('HTMLEvents');
+						evt.initEvent('click');
+
+						var link = document.createElement('a');
+						link.href = renderer.domElement.toDataURL();
+						link.download = 'ball-' + ('00' + (len - i)).slice(-2) + '.png';
+						link.dispatchEvent(evt);
+						rotateAroundWorldAxis(sphere, axis, 2 * Math.PI / len);
+					}
+				} else {
+					(function () {
+						var render = function render() {
+							rotateX(sphere, 0.02);
+							// ThreeUtils.rotateY(sphere, 0.02);
+							// ThreeUtils.rotateZ(sphere, 0.02);
+
+							renderer.render(scene, camera);
+							window.requestAnimationFrame(render);
+						};
+
+						window.requestAnimationFrame(render);
+					})();
 				}
-
-				window.requestAnimationFrame(render);
 			});
 		}
 	});

@@ -5,9 +5,11 @@ import config from './config';
 var loader = new THREE.TextureLoader();
 loader.setCrossOrigin('');
 
-var rotWorldMatrix;
-var vecY = new THREE.Vector3(1, 0, 0);
+// var rotWorldMatrix;
+var quaternion = new THREE.Quaternion();
+
 var vecX = new THREE.Vector3(0, 1, 0);
+var vecY = new THREE.Vector3(1, 0, 0);
 var vecZ = new THREE.Vector3(0, 0, 1);
 
 export function addLightsToScene(scene) {
@@ -63,11 +65,14 @@ export function rotateAroundWorldAxis(object, axis, radians) {
 		return;
 	}
 
-	rotWorldMatrix = new THREE.Matrix4();
-	rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
-	rotWorldMatrix.multiply(object.matrix); // pre-multiply
-	object.matrix = rotWorldMatrix;
-	object.rotation.setFromRotationMatrix(object.matrix);
+	quaternion.setFromAxisAngle(axis, radians);
+	object.quaternion.multiplyQuaternions(quaternion, object.quaternion);
+
+	// rotWorldMatrix = new THREE.Matrix4();
+	// rotWorldMatrix.makeRotationAxis(axis.normalize(), radians);
+	// rotWorldMatrix.multiply(object.matrix); // pre-multiply
+	// object.matrix = rotWorldMatrix;
+	// object.rotation.setFromRotationMatrix(object.matrix);
 }
 
 export function rotateX(object, radians) {
