@@ -1,5 +1,4 @@
-Kera's Tagpro 3D Balls Userscript
-====================
+# ![demo](example/ball.png) Kera's Tagpro 3D Balls Userscript
 
 Download: http://keratagpro.github.io/tagpro-balls-3d/tagpro-balls-3d.user.js
 
