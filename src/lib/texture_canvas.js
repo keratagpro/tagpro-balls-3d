@@ -24,7 +24,7 @@ export default class TextureCanvas {
 		this.textureIndexRed = 0;
 		this.textureIndexBlue = 0;
 
-		if (config.randomOrder) {
+		if (config.textureSelection !== 'default') {
 			this.shuffleArray(config.texturesRed);
 			this.shuffleArray(config.texturesBlue);
 		}
@@ -164,11 +164,17 @@ export default class TextureCanvas {
 		var texture;
 		if (player.team === 1) {
 			texture = this.config.texturesRed[this.textureIndexRed % this.config.texturesRed.length];
-			this.textureIndexRed += 1;
+
+			if (this.config.textureSelection !== 'singleRandom') {
+				this.textureIndexRed += 1;
+			}
 		}
 		else {
 			texture = this.config.texturesBlue[this.textureIndexBlue % this.config.texturesBlue.length];
-			this.textureIndexBlue += 1;
+
+			if (this.config.textureSelection !== 'singleRandom') {
+				this.textureIndexBlue += 1;
+			}
 		}
 
 		if (this.config.useCorsProxy) {

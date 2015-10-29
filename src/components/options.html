@@ -48,9 +48,12 @@
 			</label>
 
 			<label>
-				<span>Random texture order</span>
-				<input type="checkbox" checked="{{randomOrder}}">
-				<small class="options-3d-muted">(Apply selected textures randomly instead of sequentially)</small>
+				<span>Texture selection behavior</span>
+				<select value="{{textureSelection}}">
+					<option value="default">one per player</option>
+					<option value="random">random per player</option>
+					<option value="singleRandom">random per team</option>
+				</select>
 			</label>
 
 			<label>
