@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          TagPro Balls 3D
 // @description   Replaces ball sprites with rotating 3D ball sprites using THREE.js.
-// @version       0.4.1
+// @version       0.4.2
 // @author        Kera
 // @grant         GM_addStyle
 // @grant         GM_getValue
@@ -831,6 +831,9 @@ tagpro.ready(function() {
 
 				var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
 
+				var $optionsLink = $('<a href="#" class="balls3d-button">3D settings</a>');
+				$optionsLink.insertBefore($existingLink);
+
 				tagpro.balls3d = new Ractive({
 					el: $elem,
 					data: {
@@ -843,6 +846,11 @@ tagpro.ready(function() {
 					oninit: function oninit() {
 						this.on('Options.close', function () {
 							this.set('showOptions', false);
+							return false;
+						});
+
+						this.observe('showOptions', function (val) {
+							$optionsLink.toggleClass('active', val);
 						});
 					},
 					transitions: {
@@ -850,12 +858,10 @@ tagpro.ready(function() {
 					}
 				});
 
-				var $a = $('<a href="#" class="balls3d-button">3D settings</a>').on('click', function () {
+				$optionsLink.on('click', function () {
 					tagpro.balls3d.toggle('showOptions');
-					$(this).toggleClass('active', tagpro.balls3d.get('showOptions'));
+					return false;
 				});
-
-				$a.insertBefore($existingLink);
 			});
 		}
 	});
