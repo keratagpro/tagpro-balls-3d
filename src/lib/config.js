@@ -3,7 +3,7 @@ import THREE from 'three';
 
 import Storage from './storage';
 
-const rootUrl = 'http://keratagpro.github.io/tagpro-balls-3d';
+const rootUrl = 'https://keratagpro.github.io/tagpro-balls-3d';
 
 export var defaults = {
 	texturesRed: [`${rootUrl}/textures/planets/mars.jpg`],

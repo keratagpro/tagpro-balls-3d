@@ -55,8 +55,8 @@ tagpro.ready(function() {
 		}
 
 		if (utils.isHalloweenEvent()) {
-			config.textureMarsBall = 'http://keratagpro.github.io/tagpro-balls-3d/textures/misc/eye.jpg';
-			config.texturesBlue = ['http://keratagpro.github.io/tagpro-balls-3d/textures/misc/zombie.jpg'];
+			config.textureMarsBall = 'https://keratagpro.github.io/tagpro-balls-3d/textures/misc/eye.jpg';
+			config.texturesBlue = ['https://keratagpro.github.io/tagpro-balls-3d/textures/misc/zombie.jpg'];
 		}
 
 		init3D(config);

@@ -115,7 +115,7 @@ tagpro.ready(function() {
 		return Storage;
 	})();
 
-	var rootUrl = 'http://keratagpro.github.io/tagpro-balls-3d';
+	var rootUrl = 'https://keratagpro.github.io/tagpro-balls-3d';
 
 	var defaults = {
 		texturesRed: [rootUrl + '/textures/planets/mars.jpg'],
@@ -1045,8 +1045,8 @@ tagpro.ready(function() {
 			}
 
 			if (isHalloweenEvent()) {
-				config.textureMarsBall = 'http://keratagpro.github.io/tagpro-balls-3d/textures/misc/eye.jpg';
-				config.texturesBlue = ['http://keratagpro.github.io/tagpro-balls-3d/textures/misc/zombie.jpg'];
+				config.textureMarsBall = 'https://keratagpro.github.io/tagpro-balls-3d/textures/misc/eye.jpg';
+				config.texturesBlue = ['https://keratagpro.github.io/tagpro-balls-3d/textures/misc/zombie.jpg'];
 			}
 
 			inject3D(config);
