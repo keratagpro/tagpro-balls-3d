@@ -35,6 +35,11 @@
 		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/mars.jpg"
 	},
 	{
+		"name": "moon",
+		"tag": "planets",
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/moon.jpg"
+	},
+	{
 		"name": "neptune",
 		"tag": "planets",
 		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/planets/neptune.jpg"
