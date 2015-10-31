@@ -19,8 +19,6 @@ export default class TextureCanvas {
 
 		this.baseTexture = new PIXI.BaseTexture(this.renderer.domElement);
 
-		this.packer = new Packer(this.width, this.height);
-
 		this.tilePadding = 15;
 
 		this.textureIndexRed = 0;
@@ -59,7 +57,7 @@ export default class TextureCanvas {
 	addPlayer(player) {
 		var texturePath = this.getTexturePathForPlayer(player);
 		ThreeUtils.loadTextureAsync(texturePath, texture => {
-			var sphere = ThreeUtils.createSphereMesh({ textureMap: texture });
+			var sphere = ThreeUtils.createSphereMesh({ texture });
 
 			ThreeUtils.rotateZ(sphere, Math.PI);
 
@@ -144,12 +142,19 @@ export default class TextureCanvas {
 	}
 
 	updateTexture(player) {
-		var texturePath = this.getTexturePathForPlayer(player);
-		ThreeUtils.loadTextureAsync(texturePath, texture => {
-			var material = this.playerMap[player.id].sphere.material;
-			material.map = texture;
-			material.needsUpdate = true;
-		});
+		var meta = this.playerMap[player.id];
+
+		if (!meta) {
+			this.addPlayer(player);
+		}
+		else {
+			var texturePath = this.getTexturePathForPlayer(player);
+			ThreeUtils.loadTextureAsync(texturePath, texture => {
+				var material = meta.sphere.material;
+				material.map = texture;
+				material.needsUpdate = true;
+			});
+		}
 	}
 
 	render() {
@@ -163,10 +168,13 @@ export default class TextureCanvas {
 			delete p.fit;
 		});
 
-		this.packer.fit(metaArray);
+		var packer = new Packer(this.width, this.height);
+
+		packer.fit(metaArray);
 
 		metaArray.forEach(p => {
 			if (!p.fit) {
+				// console.log('could not fit', p);
 				return;
 			}
 
@@ -199,6 +207,8 @@ export default class TextureCanvas {
 	setPlayerSprite(player, rect) {
 		var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
 		var texture = new PIXI.Texture(this.baseTexture, frame);
+
+		// console.log('setting live texture for player', player.id, player.name, rect);
 
 		player.sprites.actualBall.pivot.x = this.tilePadding / 2;
 		player.sprites.actualBall.pivot.y = this.tilePadding / 2;

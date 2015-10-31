@@ -120,7 +120,7 @@ tagpro.ready(function() {
 	var defaults = {
 		texturesRed: [rootUrl + '/textures/planets/mars.jpg'],
 		texturesBlue: [rootUrl + '/textures/planets/earth.jpg'],
-		textureMarsBall: 'http://jeromeetienne.github.io/threex.planets/images/marsmap1k.jpg',
+		textureMarsBall: rootUrl + '/textures/planets/mars.jpg',
 		textureSelection: 'default',
 		velocityCoefficient: 0.1,
 		rotationCoefficient: 0.01,
@@ -200,6 +200,7 @@ tagpro.ready(function() {
 
 	function loadTextureAsync(texturePath, callback) {
 		loader.load(texturePath, function (texture) {
+			// console.log('loaded texture', texturePath);
 			texture.anisotropy = config.anisotropy;
 			texture.minFilter = config.minFilter;
 
@@ -284,6 +285,10 @@ tagpro.ready(function() {
 		return false;
 	}
 
+	function isHalloweenEvent() {
+		return $('script[src*="halloween"').length !== 0;
+	}
+
 	function values(object) {
 		var result = [];
 		for (var property in object) {
@@ -350,8 +355,6 @@ tagpro.ready(function() {
 
 			this.baseTexture = new PIXI.BaseTexture(this.renderer.domElement);
 
-			this.packer = new Packer(this.width, this.height);
-
 			this.tilePadding = 15;
 
 			this.textureIndexRed = 0;
@@ -395,7 +398,7 @@ tagpro.ready(function() {
 
 				var texturePath = this.getTexturePathForPlayer(player);
 				loadTextureAsync(texturePath, function (texture) {
-					var sphere = createSphereMesh({ textureMap: texture });
+					var sphere = createSphereMesh({ texture: texture });
 
 					rotateZ(sphere, Math.PI);
 
@@ -487,14 +490,18 @@ tagpro.ready(function() {
 		}, {
 			key: 'updateTexture',
 			value: function updateTexture(player) {
-				var _this3 = this;
+				var meta = this.playerMap[player.id];
 
-				var texturePath = this.getTexturePathForPlayer(player);
-				loadTextureAsync(texturePath, function (texture) {
-					var material = _this3.playerMap[player.id].sphere.material;
-					material.map = texture;
-					material.needsUpdate = true;
-				});
+				if (!meta) {
+					this.addPlayer(player);
+				} else {
+					var texturePath = this.getTexturePathForPlayer(player);
+					loadTextureAsync(texturePath, function (texture) {
+						var material = meta.sphere.material;
+						material.map = texture;
+						material.needsUpdate = true;
+					});
+				}
 			}
 		}, {
 			key: 'render',
@@ -504,7 +511,7 @@ tagpro.ready(function() {
 		}, {
 			key: 'updateBinPacking',
 			value: function updateBinPacking() {
-				var _this4 = this;
+				var _this3 = this;
 
 				var metaArray = values(this.playerMap).concat(values(this.objectMap));
 
@@ -512,10 +519,13 @@ tagpro.ready(function() {
 					delete p.fit;
 				});
 
-				this.packer.fit(metaArray);
+				var packer = new Packer(this.width, this.height);
+
+				packer.fit(metaArray);
 
 				metaArray.forEach(function (p) {
 					if (!p.fit) {
+						// console.log('could not fit', p);
 						return;
 					}
 
@@ -536,9 +546,9 @@ tagpro.ready(function() {
 						};
 
 						if (p.player) {
-							_this4.setPlayerSprite(p.player, rect);
+							_this3.setPlayerSprite(p.player, rect);
 						} else if (p.object) {
-							_this4.setMarsBallSprite(p.object, rect);
+							_this3.setMarsBallSprite(p.object, rect);
 						}
 					}
 				});
@@ -548,6 +558,8 @@ tagpro.ready(function() {
 			value: function setPlayerSprite(player, rect) {
 				var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
 				var texture = new PIXI.Texture(this.baseTexture, frame);
+
+				// console.log('setting live texture for player', player.id, player.name, rect);
 
 				player.sprites.actualBall.pivot.x = this.tilePadding / 2;
 				player.sprites.actualBall.pivot.y = this.tilePadding / 2;
@@ -642,10 +654,12 @@ tagpro.ready(function() {
 		});
 
 		after(tr, 'createBallSprite', function (player) {
+			// console.log('adding ball to canvas', player.id, player.name);
 			texture.addPlayer(player);
 		});
 
 		after(tr, 'destroyPlayer', function (player) {
+			// console.log('removing ball from canvas', player.id, player.name);
 			texture.removePlayer(player);
 		});
 
@@ -659,6 +673,7 @@ tagpro.ready(function() {
 			var tileId = color + 'ball';
 
 			if (player.sprites.actualBall.tileId !== tileId) {
+				// console.log('player changed team', player.id, player.name);
 				texture.updateTexture(player);
 				player.sprites.actualBall.tileId = tileId;
 			}
@@ -1025,7 +1040,13 @@ tagpro.ready(function() {
 		// Check if is in game
 		if (isGame()) {
 			if (config.disableForEvents && isEvent()) {
+				console.log('Disabling 3D for event!');
 				return;
+			}
+
+			if (isHalloweenEvent()) {
+				config.textureMarsBall = 'http://keratagpro.github.io/tagpro-balls-3d/textures/misc/eye.jpg';
+				config.texturesBlue = ['http://keratagpro.github.io/tagpro-balls-3d/textures/misc/zombie.jpg'];
 			}
 
 			inject3D(config);

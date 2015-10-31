@@ -34,6 +34,10 @@ export function isEvent() {
 	return false;
 }
 
+export function isHalloweenEvent() {
+	return $('script[src*="halloween"').length !== 0;
+}
+
 export function values(object) {
 	var result = [];
 	for(var property in object) {

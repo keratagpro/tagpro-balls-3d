@@ -19,10 +19,12 @@ export default function inject3D(config) {
 	});
 
 	after(tr, 'createBallSprite', function(player) {
+		// console.log('adding ball to canvas', player.id, player.name);
 		texture.addPlayer(player);
 	});
 
 	after(tr, 'destroyPlayer', function(player) {
+		// console.log('removing ball from canvas', player.id, player.name);
 		texture.removePlayer(player);
 	});
 
@@ -36,6 +38,7 @@ export default function inject3D(config) {
 		var tileId = color + 'ball';
 
 		if (player.sprites.actualBall.tileId !== tileId) {
+			// console.log('player changed team', player.id, player.name);
 			texture.updateTexture(player);
 			player.sprites.actualBall.tileId = tileId;
 		}

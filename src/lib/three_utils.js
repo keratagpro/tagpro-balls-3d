@@ -60,6 +60,7 @@ export function createSphereMesh(options) {
 
 export function loadTextureAsync(texturePath, callback) {
 	loader.load(texturePath, function(texture) {
+		// console.log('loaded texture', texturePath);
 		texture.anisotropy = config.anisotropy;
 		texture.minFilter = config.minFilter;
 

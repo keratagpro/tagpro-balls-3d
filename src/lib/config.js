@@ -8,7 +8,7 @@ const rootUrl = 'http://keratagpro.github.io/tagpro-balls-3d';
 export var defaults = {
 	texturesRed: [`${rootUrl}/textures/planets/mars.jpg`],
 	texturesBlue: [`${rootUrl}/textures/planets/earth.jpg`],
-	textureMarsBall: `http://jeromeetienne.github.io/threex.planets/images/marsmap1k.jpg`,
+	textureMarsBall: `${rootUrl}/textures/planets/mars.jpg`,
 	textureSelection: 'default',
 	velocityCoefficient: 0.1,
 	rotationCoefficient: 0.01,

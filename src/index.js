@@ -3,7 +3,7 @@ import Ractive from 'ractive';
 
 import init3D from './lib/init_3d';
 import { initSelectize } from './lib/selectize_utils';
-import { isGame, isFrontPage, isEvent } from './lib/utils';
+import * as utils from './lib/utils';
 import config from './lib/config';
 import Options from './components/options';
 import slide from './transitions/slide';
@@ -48,14 +48,20 @@ function initOptions() {
 
 tagpro.ready(function() {
 	// Check if is in game
-	if (isGame()) {
-		if (config.disableForEvents && isEvent()) {
+	if (utils.isGame()) {
+		if (config.disableForEvents && utils.isEvent()) {
+			console.log('Disabling 3D for event!');
 			return;
+		}
+
+		if (utils.isHalloweenEvent()) {
+			config.textureMarsBall = 'http://keratagpro.github.io/tagpro-balls-3d/textures/misc/eye.jpg';
+			config.texturesBlue = ['http://keratagpro.github.io/tagpro-balls-3d/textures/misc/zombie.jpg'];
 		}
 
 		init3D(config);
 	}
-	else if (isFrontPage()) {
+	else if (utils.isFrontPage()) {
 		GM_addStyle(`
 			body {
 				overflow: visible;
