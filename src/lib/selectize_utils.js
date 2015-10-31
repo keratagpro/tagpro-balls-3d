@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { injectCSS, injectScript } from './inject_utils';
+import { injectCSS, injectScript } from './utils';
 
 export function initSelectize() {
 	injectCSS('https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.legacy.min.css');

@@ -1,3 +1,4 @@
+import $ from 'jquery';
 import THREE from 'three';
 
 import config from './config';
@@ -22,15 +23,39 @@ export function addLightsToScene(scene) {
 	scene.add(light);
 }
 
-export function createSphereMesh(texture) {
-	var geometry = new THREE.SphereGeometry(config.sphereRadius, config.sphereWidthSegments, config.sphereHeightSegments);
+export function createSphereMesh(options) {
+	options = $.extend({
+		radius: config.sphereRadius,
+		widthSegments: config.sphereWidthSegments,
+		heightSegments: config.sphereHeightSegments,
+		shading: config.sphereShading,
+		texture: null,
+		drawOutline: config.drawOutline,
+		outlineColor: config.outlineColor,
+		outlineScale: 1.05
+	}, options);
+
+	var geometry = new THREE.SphereGeometry(options.radius, options.widthSegments, options.heightSegments);
 
 	var material = new THREE.MeshPhongMaterial({
-		shading: config.sphereShading,
-		map: texture
+		shading: options.shading,
+		map: options.texture,
 	});
 
-	return new THREE.Mesh(geometry, material);
+	var mesh = new THREE.Mesh(geometry, material);
+
+	if (options.drawOutline) {
+		var outlineMaterial = new THREE.MeshBasicMaterial({
+			color: options.outlineColor,
+			side: THREE.FrontSide
+		});
+
+		var outline = new THREE.Mesh(geometry, outlineMaterial);
+		outline.scale.multiplyScalar(options.outlineScale);
+		mesh.add(outline);
+	}
+
+	return mesh;
 }
 
 export function loadTextureAsync(texturePath, callback) {

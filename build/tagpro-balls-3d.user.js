@@ -120,9 +120,10 @@ tagpro.ready(function() {
 	var defaults = {
 		texturesRed: [rootUrl + '/textures/planets/mars.jpg'],
 		texturesBlue: [rootUrl + '/textures/planets/earth.jpg'],
+		textureMarsBall: 'http://jeromeetienne.github.io/threex.planets/images/marsmap1k.jpg',
 		textureSelection: 'default',
-		velocityCoefficient: 1.0,
-		rotationCoefficient: 1.0,
+		velocityCoefficient: 0.1,
+		rotationCoefficient: 0.01,
 		ambientLightColor: 0x888888,
 		lightColor: 0xcccccc,
 		lightPosition: [-200, -200, -400],
@@ -133,8 +134,11 @@ tagpro.ready(function() {
 		sphereWidthSegments: 16,
 		sphereHeightSegments: 12,
 		sphereShading: THREE.SmoothShading,
-		useCorsProxy: true,
-		corsProxy: 'https://crossorigin.me/'
+		useCorsProxy: false,
+		corsProxy: 'https://crossorigin.me/',
+		disableForEvents: true,
+		drawOutline: false,
+		outlineColor: 0x000000
 	};
 
 	var config = $.extend(true, {}, defaults, Storage.all());
@@ -159,15 +163,39 @@ tagpro.ready(function() {
 		scene.add(light);
 	}
 
-	function createSphereMesh(texture) {
-		var geometry = new THREE.SphereGeometry(config.sphereRadius, config.sphereWidthSegments, config.sphereHeightSegments);
+	function createSphereMesh(options) {
+		options = $.extend({
+			radius: config.sphereRadius,
+			widthSegments: config.sphereWidthSegments,
+			heightSegments: config.sphereHeightSegments,
+			shading: config.sphereShading,
+			texture: null,
+			drawOutline: config.drawOutline,
+			outlineColor: config.outlineColor,
+			outlineScale: 1.05
+		}, options);
+
+		var geometry = new THREE.SphereGeometry(options.radius, options.widthSegments, options.heightSegments);
 
 		var material = new THREE.MeshPhongMaterial({
-			shading: config.sphereShading,
-			map: texture
+			shading: options.shading,
+			map: options.texture
 		});
 
-		return new THREE.Mesh(geometry, material);
+		var mesh = new THREE.Mesh(geometry, material);
+
+		if (options.drawOutline) {
+			var outlineMaterial = new THREE.MeshBasicMaterial({
+				color: options.outlineColor,
+				side: THREE.FrontSide
+			});
+
+			var outline = new THREE.Mesh(geometry, outlineMaterial);
+			outline.scale.multiplyScalar(options.outlineScale);
+			mesh.add(outline);
+		}
+
+		return mesh;
 	}
 
 	function loadTextureAsync(texturePath, callback) {
@@ -222,6 +250,48 @@ tagpro.ready(function() {
 		rotateAroundWorldAxis(object, vecZ, radians);
 	}
 
+	function injectCSS(src) {
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.href = src;
+		(document.head || document.body).appendChild(link);
+	}
+
+	function injectScript(src) {
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.src = src;
+		document.body.appendChild(script);
+	}
+
+	function isFrontPage() {
+		return location.pathname === '/';
+	}
+
+	function isGame() {
+		return tagpro.state > 0;
+	}
+
+	function isEvent() {
+		if ($('script[src*="event"]').length !== 0) {
+			return true;
+		}
+
+		if ($('#event-tiles').length !== 0) {
+			return true;
+		}
+
+		return false;
+	}
+
+	function values(object) {
+		var result = [];
+		for (var property in object) {
+			result.push(object[property]);
+		}
+		return result;
+	}
+
 	var Packer = (function () {
 		function Packer(w, h) {
 			babelHelpers.classCallCheck(this, Packer);
@@ -270,7 +340,8 @@ tagpro.ready(function() {
 
 			this.config = config;
 
-			this.metaMap = {};
+			this.playerMap = {};
+			this.objectMap = {};
 
 			this.width = tagpro.TILE_SIZE * 10;
 			this.height = tagpro.TILE_SIZE * 10;
@@ -324,14 +395,15 @@ tagpro.ready(function() {
 
 				var texturePath = this.getTexturePathForPlayer(player);
 				loadTextureAsync(texturePath, function (texture) {
-					var sphere = createSphereMesh(texture);
+					var sphere = createSphereMesh({ textureMap: texture });
+
+					rotateZ(sphere, Math.PI);
 
 					_this.scene.add(sphere);
 
-					_this.metaMap[player.id] = {
+					_this.playerMap[player.id] = {
 						player: player,
 						sphere: sphere,
-						angle: player.angle,
 						w: tagpro.TILE_SIZE + _this.tilePadding,
 						h: tagpro.TILE_SIZE + _this.tilePadding
 					};
@@ -348,17 +420,61 @@ tagpro.ready(function() {
 					return;
 				}
 
-				var meta = this.metaMap[player.id];
+				var meta = this.playerMap[player.id];
 				this.scene.remove(meta.sphere);
 
-				delete this.metaMap[player.id];
+				delete this.playerMap[player.id];
 
 				this.updateBinPacking();
 			}
 		}, {
+			key: 'addMarsBall',
+			value: function addMarsBall(object, position) {
+				var _this2 = this;
+
+				var texturePath = this.config.textureMarsBall;
+
+				loadTextureAsync(texturePath, function (texture) {
+					var sphere = createSphereMesh({
+						texture: texture,
+						radius: tagpro.TILE_SIZE - 2
+					});
+
+					rotateZ(sphere, Math.PI);
+
+					_this2.scene.add(sphere);
+
+					_this2.objectMap[object.id] = {
+						object: object,
+						sphere: sphere,
+						w: 2 * tagpro.TILE_SIZE + _this2.tilePadding,
+						h: 2 * tagpro.TILE_SIZE + _this2.tilePadding
+					};
+
+					_this2.updateBinPacking();
+
+					_this2.baseTexture.dirty();
+				});
+			}
+		}, {
+			key: 'updateMarsBall',
+			value: function updateMarsBall(object, position) {
+				var meta = this.objectMap[object.id];
+
+				if (!meta) {
+					return;
+				}
+
+				this.rotateSphere(object, meta);
+
+				if (object.lx !== 0 || object.ly !== 0) {
+					this.baseTexture.dirty();
+				}
+			}
+		}, {
 			key: 'updatePosition',
 			value: function updatePosition(player) {
-				var meta = this.metaMap[player.id];
+				var meta = this.playerMap[player.id];
 
 				if (!meta) {
 					return;
@@ -366,18 +482,16 @@ tagpro.ready(function() {
 
 				this.rotateSphere(player, meta);
 
-				meta.angle = player.angle;
-
 				this.baseTexture.dirty();
 			}
 		}, {
 			key: 'updateTexture',
 			value: function updateTexture(player) {
-				var _this2 = this;
+				var _this3 = this;
 
 				var texturePath = this.getTexturePathForPlayer(player);
 				loadTextureAsync(texturePath, function (texture) {
-					var material = _this2.metaMap[player.id].sphere.material;
+					var material = _this3.playerMap[player.id].sphere.material;
 					material.map = texture;
 					material.needsUpdate = true;
 				});
@@ -390,11 +504,9 @@ tagpro.ready(function() {
 		}, {
 			key: 'updateBinPacking',
 			value: function updateBinPacking() {
-				var _this3 = this;
+				var _this4 = this;
 
-				var metaArray = Object.keys(this.metaMap).map(function (key) {
-					return _this3.metaMap[key];
-				});
+				var metaArray = values(this.playerMap).concat(values(this.objectMap));
 
 				metaArray.forEach(function (p) {
 					delete p.fit;
@@ -416,12 +528,18 @@ tagpro.ready(function() {
 						pos.x = p.x + p.w / 2;
 						pos.y = p.y + p.w / 2;
 
-						_this3.setPlayerSprite(p.player, {
+						var rect = {
 							x: p.x,
 							y: p.y,
 							w: p.w,
 							h: p.h
-						});
+						};
+
+						if (p.player) {
+							_this4.setPlayerSprite(p.player, rect);
+						} else if (p.object) {
+							_this4.setMarsBallSprite(p.object, rect);
+						}
 					}
 				});
 			}
@@ -431,24 +549,41 @@ tagpro.ready(function() {
 				var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
 				var texture = new PIXI.Texture(this.baseTexture, frame);
 
-				if (tagpro.TILE_SIZE !== rect.w || tagpro.TILE_SIZE !== rect.h) {
-					player.sprites.actualBall.position.x = (tagpro.TILE_SIZE - rect.w) / 2;
-					player.sprites.actualBall.position.y = (tagpro.TILE_SIZE - rect.h) / 2;
-				}
+				player.sprites.actualBall.pivot.x = this.tilePadding / 2;
+				player.sprites.actualBall.pivot.y = this.tilePadding / 2;
 
 				player.sprites.actualBall.setTexture(texture);
+			}
+		}, {
+			key: 'setMarsBallSprite',
+			value: function setMarsBallSprite(object, rect) {
+				var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
+				var texture = new PIXI.Texture(this.baseTexture, frame);
+
+				object.sprite.pivot.x = this.tilePadding / 2;
+				object.sprite.pivot.y = this.tilePadding / 2;
+
+				object.sprite.setTexture(texture);
 			}
 		}, {
 			key: 'getTexturePathForPlayer',
 			value: function getTexturePathForPlayer(player) {
 				var texture;
 				if (player.team === 1) {
+					if (this.config.texturesRed.length === 0) {
+						return null;
+					}
+
 					texture = this.config.texturesRed[this.textureIndexRed % this.config.texturesRed.length];
 
 					if (this.config.textureSelection !== 'singleRandom') {
 						this.textureIndexRed += 1;
 					}
 				} else {
+					if (this.config.texturesBlue.length === 0) {
+						return null;
+					}
+
 					texture = this.config.texturesBlue[this.textureIndexBlue % this.config.texturesBlue.length];
 
 					if (this.config.textureSelection !== 'singleRandom') {
@@ -469,11 +604,9 @@ tagpro.ready(function() {
 					return;
 				}
 
-				rotateX(meta.sphere, -(player.lx || 0) * 0.1 * this.config.velocityCoefficient);
-				rotateY(meta.sphere, (player.ly || 0) * 0.1 * this.config.velocityCoefficient);
-
-				var theta = player.angle - meta.angle;
-				rotateZ(meta.sphere, theta * this.config.rotationCoefficient);
+				rotateX(meta.sphere, -(player.lx || 0) * this.config.velocityCoefficient);
+				rotateY(meta.sphere, (player.ly || 0) * this.config.velocityCoefficient);
+				rotateZ(meta.sphere, (player.a || 0) * this.config.rotationCoefficient);
 			}
 		}, {
 			key: 'shuffleArray',
@@ -491,13 +624,21 @@ tagpro.ready(function() {
 		return TextureCanvas;
 	})();
 
-	function inject3D() {
+	function inject3D(config) {
 		var texture = new TextureCanvas(config);
 
 		var tr = tagpro.renderer;
 
 		before(tr, 'render', function () {
 			texture.render();
+		});
+
+		after(tr, 'drawMarsball', function (object, position) {
+			texture.addMarsBall(object, position);
+		});
+
+		after(tr, 'updateMarsBall', function (object, position) {
+			texture.updateMarsBall(object, position);
 		});
 
 		after(tr, 'createBallSprite', function (player) {
@@ -522,20 +663,6 @@ tagpro.ready(function() {
 				player.sprites.actualBall.tileId = tileId;
 			}
 		};
-	}
-
-	function injectCSS(src) {
-		var link = document.createElement('link');
-		link.rel = 'stylesheet';
-		link.href = src;
-		(document.head || document.body).appendChild(link);
-	}
-
-	function injectScript(src) {
-		var script = document.createElement('script');
-		script.type = 'text/javascript';
-		script.src = src;
-		document.body.appendChild(script);
 	}
 
 	function initSelectize() {
@@ -627,11 +754,14 @@ tagpro.ready(function() {
 
 	var Preview = Ractive.extend({
 		template: '<canvas class="options-3d-preview-ball"></canvas>',
+		data: {
+			size: tagpro.TILE_SIZE
+		},
 		onrender: function onrender() {
 			var _this = this;
 
-			var width = tagpro.TILE_SIZE;
-			var height = tagpro.TILE_SIZE;
+			var width = this.get('size');
+			var height = this.get('size');
 
 			var renderer = new THREE.WebGLRenderer({
 				alpha: true,
@@ -661,7 +791,7 @@ tagpro.ready(function() {
 				texture.minFilter = _this.get('options.minFilter');
 				texture.needsUpdate = true;
 
-				var geometry = new THREE.SphereGeometry(_this.get('options.sphereRadius'), _this.get('options.sphereWidthSegments'), _this.get('options.sphereHeightSegments'));
+				var geometry = new THREE.SphereGeometry(_this.get('radius') || _this.get('options.sphereRadius'), _this.get('options.sphereWidthSegments'), _this.get('options.sphereHeightSegments'));
 
 				var material = new THREE.MeshPhongMaterial({
 					shading: _this.get('options.sphereShading'),
@@ -682,6 +812,18 @@ tagpro.ready(function() {
 				var sphere = new THREE.Mesh(geometry, material);
 				sphere.position.x = width / 2;
 				sphere.position.y = height / 2;
+
+				if (_this.get('options.drawOutline')) {
+					var outlineMaterial = new THREE.MeshBasicMaterial({
+						color: _this.get('options.outlineColor'),
+						side: THREE.FrontSide
+					});
+
+					var outline = new THREE.Mesh(geometry, outlineMaterial);
+					outline.position = sphere.position;
+					outline.scale.multiplyScalar(1.05);
+					sphere.add(outline);
+				}
 
 				rotateZ(sphere, Math.PI);
 
@@ -720,7 +862,7 @@ tagpro.ready(function() {
 			this.set('options.' + option, defaults[option]);
 			this.event.original.preventDefault();
 		},
-		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label>\n\t\t\tRed textures\n\t\t\t<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\tBlue textures\n\t\t\t<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tAdvanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<label class="{{isChanged(\'useCorsProxy\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'useCorsProxy\')" title="Reset to default">&times;</a>\n\t\t\t\t\tEnable remote textures\n\t\t\t\t</span>\n\t\t\t\t<input type="checkbox" checked="{{useCorsProxy}}">\n\t\t\t\t<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'textureSelection\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'textureSelection\')" title="Reset to default">&times;</a>\n\t\t\t\t\tTexture selection\n\t\t\t\t</span>\n\t\t\t\t<select value="{{textureSelection}}">\n\t\t\t\t\t<option value="default">in order</option>\n\t\t\t\t\t<option value="random">random</option>\n\t\t\t\t\t<option value="singleRandom">random per team</option>\n\t\t\t\t</select>\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'velocityCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'velocityCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\tVelocity coefficient\n\t\t\t\t</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'rotationCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'rotationCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\tRotation coefficient\n\t\t\t\t\t</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'ambientLightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'ambientLightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\tAmbient light color\n\t\t\t\t</span>\n\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'lightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDirectional light color\n\t\t\t\t</span>\n\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'lightPosition\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightPosition\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDirectional light position\n\t\t\t\t</span>\n\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'lightIntensity\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightIntensity\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDirectional light intensity\n\t\t\t\t</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'anisotropy\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'anisotropy\')" title="Reset to default">&times;</a>\n\t\t\t\t\tTexture.anisotropy\n\t\t\t\t</span>\n\t\t\t\t<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'minFilter\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'minFilter\')" title="Reset to default">&times;</a>\n\t\t\t\t\tTexture.minFilter\n\t\t\t\t</span>\n\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t{{/each}}\n\t\t\t\t</select>\n\t\t\t</label>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
+		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label>\n\t\t\tRed textures\n\t\t\t<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\tBlue textures\n\t\t\t<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<label>\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tAdvanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<label class="{{isChanged(\'useCorsProxy\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'useCorsProxy\')" title="Reset to default">&times;</a>\n\t\t\t\t\tEnable custom textures\n\t\t\t\t</span>\n\t\t\t\t<input type="checkbox" checked="{{useCorsProxy}}">\n\t\t\t\t<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'textureSelection\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'textureSelection\')" title="Reset to default">&times;</a>\n\t\t\t\t\tTexture selection\n\t\t\t\t</span>\n\t\t\t\t<select value="{{textureSelection}}">\n\t\t\t\t\t<option value="default">in order</option>\n\t\t\t\t\t<option value="random">random</option>\n\t\t\t\t\t<option value="singleRandom">random per team</option>\n\t\t\t\t</select>\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'velocityCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'velocityCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\tVelocity coefficient\n\t\t\t\t</span>\n\t\t\t\t<input type="range" min="0" max="0.2" step="0.01" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'rotationCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'rotationCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\tRotation coefficient\n\t\t\t\t\t</span>\n\t\t\t\t<input type="range" min="0" max="0.02" step="0.001" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'ambientLightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'ambientLightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\tAmbient light color\n\t\t\t\t</span>\n\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'lightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDirectional light color\n\t\t\t\t</span>\n\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'lightPosition\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightPosition\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDirectional light position\n\t\t\t\t</span>\n\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'lightIntensity\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightIntensity\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDirectional light intensity\n\t\t\t\t</span>\n\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'anisotropy\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'anisotropy\')" title="Reset to default">&times;</a>\n\t\t\t\t\tTexture.anisotropy\n\t\t\t\t</span>\n\t\t\t\t<input type="range" min="1" max="16" value="{{anisotropy}}"> {{anisotropy}}\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'minFilter\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'minFilter\')" title="Reset to default">&times;</a>\n\t\t\t\t\tTexture.minFilter\n\t\t\t\t</span>\n\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t{{/each}}\n\t\t\t\t</select>\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'disableForEvents\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'disableForEvents\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDisable for special events\n\t\t\t\t</span>\n\t\t\t\t<input type="checkbox" checked="{{disableForEvents}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'drawOutline\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'drawOutline\')" title="Reset to default">&times;</a>\n\t\t\t\t\tDraw outlines\n\t\t\t\t</span>\n\t\t\t\t<input type="checkbox" checked="{{drawOutline}}">\n\t\t\t</label>\n\n\t\t\t<label class="{{isChanged(\'outlineColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t<span>\n\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'outlineColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\tOutline color\n\t\t\t\t</span>\n\t\t\t\t<input type="color" value="{{outlineColorHex}}">\n\t\t\t</label>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
 		css: '.options-3d-preview {\n\tdisplay: flex;\n}\n\n.options-3d-muted {\n\tcolor: #aaa;\n}\n\n.options-3d-preview-red,\n.options-3d-preview-blue {\n\tflex: 1;\n\ttext-align: center;\n\tpadding: 3px;\n}\n\n.options-3d-preview-red {\n\tbackground-color: rgba(255, 0, 0, 0.2);\n}\n\n.options-3d-preview-blue {\n\tbackground-color: rgba(0, 0, 255, 0.2);\n}\n\n.options-3d-preview-ball {\n\tvertical-align: middle;\n}\n\n.options-3d {\n\tmargin: 10px auto;\n\twidth: 570px;\n\tbackground-color: #eee;\n\tcolor: #000;\n\tborder-radius: 5px;\n\tborder: 2px solid #333;\n}\n\n\t.options-3d-header {\n\t\tborder-bottom: 1px solid #333;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-header .actions {\n\t\tfloat: right;\n\t\tpadding: 5px;\n\t\tmargin-right: 15px;\n\t}\n\n\t.options-3d-header .text-3d {\n\t\tposition: relative;\n\t\ttop: -3px;\n\t\tleft: -3px;\n\t}\n\n\t.options-3d-header .close {\n\t\tfloat: right;\n\t\ttext-decoration: none;\n\t\tcolor: #333;\n\t\tline-height: 20px;\n\t\tfont-size: 20px;\n\t\tpadding: 5px;\n\t}\n\n\t.options-3d h1,\n\t.options-3d h2,\n\t.options-3d h3 {\n\t\ttext-align: left;\n\t\tmargin: 0;\n\t\tpadding: 0;\n\n\t\t/* override tagpro styles */\n\t\tbackground: none;\n\t\twidth: auto;\n\t\theight: auto;\n\t}\n\n\t.options-3d h1 { font-size: 26px; }\n\t.options-3d h2 { font-size: 14px; }\n\t.options-3d h3 { font-size: 12px; }\n\n\t.options-3d h1 > span,\n\t.options-3d h2 > span,\n\t.options-3d h3 > span {\n\t\tdisplay: inline;\n\t}\n\n.options-3d-content {\n\tpadding: 5px 10px;\n\toverflow: auto;\n}\n\n\t.options-3d-content > label {\n\t\tpadding: 5px;\n\t\tdisplay: block;\n\t}\n\n\t\t.options-3d-content > label > span > .reset {\n\t\t\tdisplay: none;\n\t\t}\n\n\t\t.options-3d-content > label.changed > span > .reset {\n\t\t\tdisplay: block;\n\t\t\tfloat: left;\n\t\t\ttext-decoration: none;\n\t\t\tcolor: #aaa;\n\t\t}\n\n\t\t.options-3d-content > label > span {\n\t\t\tdisplay: inline-block;\n\t\t\twidth: 180px;\n\t\t\ttext-align: right;\n\t\t\tpadding: 5px 10px;\n\t\t}\n\n\t\t.options-3d-content > label.changed > span {\n\t\t\tfont-style: italic;\n\t\t}\n\n\t.options-3d-content > label > input {\n\t\tvertical-align: middle;\n\t}\n\n\t.options-3d-content a {\n\t\tcolor: black;\n\t}\n\n.options-3d .texture {\n\tdisplay: inline-block;\n\twidth: 100px;\n\theight: 100px;\n\tmargin: 5px;\n}\n\n.options-3d .texture img {\n\twidth: 100%;\n\theight: 100%;\n}\n\n.options-3d .texture-input {\n\twidth: 100%;\n\tbox-sizing: border-box;\n}\n\n.option-thumbnail {\n\tposition: relative;\n\twidth: 50px;\n\theight: 50px;\n\toverflow: hidden;\n\tdisplay: inline-block;\n\tvertical-align: middle;\n\tmargin-right: 5px;\n}\n\n\t.option-thumbnail img {\n\t\tposition: absolute;\n\t\tleft: 50%;\n\t\ttop: 50%;\n\t\theight: 100%;\n\t\twidth: auto;\n\t\ttransform: translate(-50%, -50%);\n\t}\n\n.option-item-image {\n\twidth: 20px;\n\theight: 20px;\n\tvertical-align: middle;\n\tpadding-right: 5px;\n}\n\n.selectize-control {\n\tposition: static;\n}\n\n.selectize-dropdown [data-selectable] {\n\twhite-space: nowrap;\n\t/*display: inline-block;*/\n}',
 		noCssTransform: true,
 		computed: {
@@ -760,6 +902,17 @@ tagpro.ready(function() {
 				set: function set(val) {
 					var color = new THREE.Color(val);
 					this.set('options.lightColor', color.getHex());
+				}
+			},
+			outlineColorHex: {
+				get: function get() {
+					var val = this.get('options.outlineColor');
+					var color = new THREE.Color(val);
+					return '#' + color.getHexString();
+				},
+				set: function set(val) {
+					var color = new THREE.Color(val);
+					this.set('options.outlineColor', color.getHex());
 				}
 			}
 		},
@@ -830,50 +983,56 @@ tagpro.ready(function() {
 		t.animateStyle(targetStyle, params).then(t.complete);
 	}
 
-	tagpro.ready(function () {
-		// Check if is in game
-		if (tagpro.state > 0) {
-			inject3D();
-		} else if (location.pathname === '/') {
-			GM_addStyle('\n\t\t\tbody {\n\t\t\t\toverflow: visible;\n\t\t\t}\n\n\t\t\t.text-3d {\n\t\t\t\tcolor: #ACE600;\n\t\t\t\ttext-shadow: 1px 1px #608100, 2px 2px #608100, 3px 3px #608100;\n\t\t\t}\n\n\t\t\t.balls3d-button {\n\t\t\t\tmargin-left: 10px;\n\t\t\t\tmargin-right: 10px;\n\t\t\t}\n\n\t\t\t.balls3d-button.active {\n\t\t\t\ttext-decoration: underline;\n\t\t\t}\n\t\t');
+	function initOptions() {
+		var $existingLink = $('a:contains("Map Statistics")');
 
-			initSelectize().then(function () {
-				var $existingLink = $('a:contains("Map Statistics")');
+		var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
 
-				var $elem = $('<div id="balls3d-options"></div>').insertAfter($existingLink.closest('.section'));
+		var $optionsLink = $('<a href="#" class="balls3d-button">3D settings</a>');
+		$optionsLink.insertBefore($existingLink);
 
-				var $optionsLink = $('<a href="#" class="balls3d-button">3D settings</a>');
-				$optionsLink.insertBefore($existingLink);
-
-				tagpro.balls3d = new Ractive({
-					el: $elem,
-					data: {
-						showOptions: false
-					},
-					template: '{{#if showOptions}}<div intro-outro="slide"><Options /></div>{{/if}}',
-					components: {
-						Options: Options
-					},
-					oninit: function oninit() {
-						this.on('Options.close', function () {
-							this.set('showOptions', false);
-							return false;
-						});
-
-						this.observe('showOptions', function (val) {
-							$optionsLink.toggleClass('active', val);
-						});
-					},
-					transitions: {
-						slide: slide
-					}
-				});
-
-				$optionsLink.on('click', function () {
-					tagpro.balls3d.toggle('showOptions');
+		tagpro.balls3d = new Ractive({
+			el: $elem,
+			data: {
+				showOptions: false
+			},
+			template: '{{#if showOptions}}<div intro-outro="slide"><Options /></div>{{/if}}',
+			components: {
+				Options: Options
+			},
+			oninit: function oninit() {
+				this.on('Options.close', function () {
+					this.set('showOptions', false);
 					return false;
 				});
-			});
+
+				this.observe('showOptions', function (val) {
+					$optionsLink.toggleClass('active', val);
+				});
+			},
+			transitions: {
+				slide: slide
+			}
+		});
+
+		$optionsLink.on('click', function () {
+			tagpro.balls3d.toggle('showOptions');
+			return false;
+		});
+	}
+
+	tagpro.ready(function () {
+		// Check if is in game
+		if (isGame()) {
+			if (config.disableForEvents && isEvent()) {
+				return;
+			}
+
+			inject3D(config);
+		} else if (isFrontPage()) {
+			GM_addStyle('\n\t\t\tbody {\n\t\t\t\toverflow: visible;\n\t\t\t}\n\n\t\t\t.text-3d {\n\t\t\t\tcolor: #ACE600;\n\t\t\t\ttext-shadow: 1px 1px #608100, 2px 2px #608100, 3px 3px #608100;\n\t\t\t}\n\n\t\t\t.balls3d-button {\n\t\t\t\tmargin-left: 10px;\n\t\t\t\tmargin-right: 10px;\n\t\t\t}\n\n\t\t\t.balls3d-button.active {\n\t\t\t\ttext-decoration: underline;\n\t\t\t}\n\t\t');
+
+			initSelectize().then(initOptions);
 		}
 	});
 

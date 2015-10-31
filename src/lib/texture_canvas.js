@@ -2,13 +2,15 @@ import THREE from 'three';
 import PIXI from 'pixi.js';
 
 import * as ThreeUtils from './three_utils';
+import { values } from './utils';
 import Packer from './packer';
 
 export default class TextureCanvas {
 	constructor(config) {
 		this.config = config;
 
-		this.metaMap = {};
+		this.playerMap = {};
+		this.objectMap = {};
 
 		this.width = tagpro.TILE_SIZE * 10;
 		this.height = tagpro.TILE_SIZE * 10;
@@ -57,14 +59,15 @@ export default class TextureCanvas {
 	addPlayer(player) {
 		var texturePath = this.getTexturePathForPlayer(player);
 		ThreeUtils.loadTextureAsync(texturePath, texture => {
-			var sphere = ThreeUtils.createSphereMesh(texture);
+			var sphere = ThreeUtils.createSphereMesh({ textureMap: texture });
+
+			ThreeUtils.rotateZ(sphere, Math.PI);
 
 			this.scene.add(sphere);
 
-			this.metaMap[player.id] = {
+			this.playerMap[player.id] = {
 				player,
 				sphere,
-				angle: player.angle,
 				w: tagpro.TILE_SIZE + this.tilePadding,
 				h: tagpro.TILE_SIZE + this.tilePadding
 			};
@@ -80,16 +83,56 @@ export default class TextureCanvas {
 			return;
 		}
 
-		var meta = this.metaMap[player.id];
+		var meta = this.playerMap[player.id];
 		this.scene.remove(meta.sphere);
 
-		delete this.metaMap[player.id];
+		delete this.playerMap[player.id];
 
 		this.updateBinPacking();
 	}
 
+	addMarsBall(object, position) {
+		var texturePath = this.config.textureMarsBall;
+
+		ThreeUtils.loadTextureAsync(texturePath, texture => {
+			var sphere = ThreeUtils.createSphereMesh({
+				texture,
+				radius: tagpro.TILE_SIZE - 2
+			});
+
+			ThreeUtils.rotateZ(sphere, Math.PI);
+
+			this.scene.add(sphere);
+
+			this.objectMap[object.id] = {
+				object,
+				sphere,
+				w: 2 * tagpro.TILE_SIZE + this.tilePadding,
+				h: 2 * tagpro.TILE_SIZE + this.tilePadding
+			};
+
+			this.updateBinPacking();
+
+			this.baseTexture.dirty();
+		});
+	}
+
+	updateMarsBall(object, position) {
+		var meta = this.objectMap[object.id];
+
+		if (!meta) {
+			return;
+		}
+
+		this.rotateSphere(object, meta);
+
+		if (object.lx !== 0 || object.ly !== 0) {
+			this.baseTexture.dirty();
+		}
+	}
+
 	updatePosition(player) {
-		var meta = this.metaMap[player.id];
+		var meta = this.playerMap[player.id];
 
 		if (!meta) {
 			return;
@@ -97,15 +140,13 @@ export default class TextureCanvas {
 
 		this.rotateSphere(player, meta);
 
-		meta.angle = player.angle;
-
 		this.baseTexture.dirty();
 	}
 
 	updateTexture(player) {
 		var texturePath = this.getTexturePathForPlayer(player);
 		ThreeUtils.loadTextureAsync(texturePath, texture => {
-			var material = this.metaMap[player.id].sphere.material;
+			var material = this.playerMap[player.id].sphere.material;
 			material.map = texture;
 			material.needsUpdate = true;
 		});
@@ -116,7 +157,7 @@ export default class TextureCanvas {
 	}
 
 	updateBinPacking() {
-		var metaArray = Object.keys(this.metaMap).map(key => this.metaMap[key]);
+		var metaArray = values(this.playerMap).concat(values(this.objectMap));
 
 		metaArray.forEach(p => {
 			delete p.fit;
@@ -138,12 +179,19 @@ export default class TextureCanvas {
 				pos.x = p.x + p.w / 2;
 				pos.y = p.y + p.w / 2;
 
-				this.setPlayerSprite(p.player, {
+				let rect = {
 					x: p.x,
 					y: p.y,
 					w: p.w,
 					h: p.h
-				});
+				};
+
+				if (p.player) {
+					this.setPlayerSprite(p.player, rect);
+				}
+				else if (p.object) {
+					this.setMarsBallSprite(p.object, rect);
+				}
 			}
 		});
 	}
@@ -152,17 +200,29 @@ export default class TextureCanvas {
 		var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
 		var texture = new PIXI.Texture(this.baseTexture, frame);
 
-		if (tagpro.TILE_SIZE !== rect.w || tagpro.TILE_SIZE !== rect.h) {
-			player.sprites.actualBall.position.x = (tagpro.TILE_SIZE - rect.w) / 2;
-			player.sprites.actualBall.position.y = (tagpro.TILE_SIZE - rect.h) / 2;
-		}
+		player.sprites.actualBall.pivot.x = this.tilePadding / 2;
+		player.sprites.actualBall.pivot.y = this.tilePadding / 2;
 
 		player.sprites.actualBall.setTexture(texture);
+	}
+
+	setMarsBallSprite(object, rect) {
+		var frame = new PIXI.Rectangle(rect.x, rect.y, rect.w, rect.h);
+		var texture = new PIXI.Texture(this.baseTexture, frame);
+
+		object.sprite.pivot.x = this.tilePadding / 2;
+		object.sprite.pivot.y = this.tilePadding / 2;
+
+		object.sprite.setTexture(texture);
 	}
 
 	getTexturePathForPlayer(player) {
 		var texture;
 		if (player.team === 1) {
+			if (this.config.texturesRed.length === 0) {
+				return null;
+			}
+
 			texture = this.config.texturesRed[this.textureIndexRed % this.config.texturesRed.length];
 
 			if (this.config.textureSelection !== 'singleRandom') {
@@ -170,6 +230,10 @@ export default class TextureCanvas {
 			}
 		}
 		else {
+			if (this.config.texturesBlue.length === 0) {
+				return null;
+			}
+
 			texture = this.config.texturesBlue[this.textureIndexBlue % this.config.texturesBlue.length];
 
 			if (this.config.textureSelection !== 'singleRandom') {
@@ -189,11 +253,9 @@ export default class TextureCanvas {
 			return;
 		}
 
-		ThreeUtils.rotateX(meta.sphere, -(player.lx || 0) * 0.1 * this.config.velocityCoefficient);
-		ThreeUtils.rotateY(meta.sphere, (player.ly || 0) * 0.1 * this.config.velocityCoefficient);
-
-		var theta = player.angle - meta.angle;
-		ThreeUtils.rotateZ(meta.sphere, theta * this.config.rotationCoefficient);
+		ThreeUtils.rotateX(meta.sphere, -(player.lx || 0) * this.config.velocityCoefficient);
+		ThreeUtils.rotateY(meta.sphere, (player.ly || 0) * this.config.velocityCoefficient);
+		ThreeUtils.rotateZ(meta.sphere, (player.a || 0) * this.config.rotationCoefficient);
 	}
 
 	shuffleArray(array) {

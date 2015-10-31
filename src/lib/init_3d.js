@@ -1,14 +1,21 @@
 import { before, after } from './hooks';
-import config from './config';
 import TextureCanvas from './texture_canvas';
 
-export default function inject3D() {
+export default function inject3D(config) {
 	var texture = new TextureCanvas(config);
 
 	var tr = tagpro.renderer;
 
 	before(tr, 'render', function() {
 		texture.render();
+	});
+
+	after(tr, 'drawMarsball', function(object, position) {
+		texture.addMarsBall(object, position);
+	});
+
+	after(tr, 'updateMarsBall', function(object, position) {
+		texture.updateMarsBall(object, position);
 	});
 
 	after(tr, 'createBallSprite', function(player) {

@@ -5,9 +5,12 @@ import * as ThreeUtils from '../lib/three_utils';
 
 export default Ractive.extend({
 	template: '<canvas class="options-3d-preview-ball"></canvas>',
+	data: {
+		size: tagpro.TILE_SIZE
+	},
 	onrender: function() {
-		var width = tagpro.TILE_SIZE;
-		var height = tagpro.TILE_SIZE;
+		var width = this.get('size');
+		var height = this.get('size');
 
 		var renderer = new THREE.WebGLRenderer({
 			alpha: true,
@@ -38,7 +41,7 @@ export default Ractive.extend({
 			texture.needsUpdate = true;
 
 			var geometry = new THREE.SphereGeometry(
-				this.get('options.sphereRadius'),
+				this.get('radius') || this.get('options.sphereRadius'),
 				this.get('options.sphereWidthSegments'),
 				this.get('options.sphereHeightSegments')
 			);
@@ -62,6 +65,18 @@ export default Ractive.extend({
 			var sphere = new THREE.Mesh(geometry, material);
 			sphere.position.x = width / 2;
 			sphere.position.y = height / 2;
+
+			if (this.get('options.drawOutline')) {
+				var outlineMaterial = new THREE.MeshBasicMaterial({
+					color: this.get('options.outlineColor'),
+					side: THREE.FrontSide
+				});
+
+				var outline = new THREE.Mesh(geometry, outlineMaterial);
+				outline.position = sphere.position;
+				outline.scale.multiplyScalar(1.05);
+				sphere.add(outline);
+			}
 
 			ThreeUtils.rotateZ(sphere, Math.PI);
 

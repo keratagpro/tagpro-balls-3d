@@ -44,7 +44,7 @@
 			<label class="{{isChanged('useCorsProxy') ? 'changed' : ''}}">
 				<span>
 					<a href="#" class="reset" on-click="resetOption('useCorsProxy')" title="Reset to default">&times;</a>
-					Enable remote textures
+					Enable custom textures
 				</span>
 				<input type="checkbox" checked="{{useCorsProxy}}">
 				<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>
@@ -67,7 +67,7 @@
 					<a href="#" class="reset" on-click="resetOption('velocityCoefficient')" title="Reset to default">&times;</a>
 					Velocity coefficient
 				</span>
-				<input type="range" min="0" max="2" step="0.1" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
+				<input type="range" min="0" max="0.2" step="0.01" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
 			</label>
 
 			<label class="{{isChanged('rotationCoefficient') ? 'changed' : ''}}">
@@ -75,7 +75,7 @@
 					<a href="#" class="reset" on-click="resetOption('rotationCoefficient')" title="Reset to default">&times;</a>
 					Rotation coefficient
 					</span>
-				<input type="range" min="0" max="2" step="0.1" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
+				<input type="range" min="0" max="0.02" step="0.001" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
 			</label>
 
 			<label class="{{isChanged('ambientLightColor') ? 'changed' : ''}}">
@@ -130,6 +130,30 @@
 						<option value="{{value}}">{{label}}</option>
 					{{/each}}
 				</select>
+			</label>
+
+			<label class="{{isChanged('disableForEvents') ? 'changed' : ''}}">
+				<span>
+					<a href="#" class="reset" on-click="resetOption('disableForEvents')" title="Reset to default">&times;</a>
+					Disable for special events
+				</span>
+				<input type="checkbox" checked="{{disableForEvents}}">
+			</label>
+
+			<label class="{{isChanged('drawOutline') ? 'changed' : ''}}">
+				<span>
+					<a href="#" class="reset" on-click="resetOption('drawOutline')" title="Reset to default">&times;</a>
+					Draw outlines
+				</span>
+				<input type="checkbox" checked="{{drawOutline}}">
+			</label>
+
+			<label class="{{isChanged('outlineColor') ? 'changed' : ''}}">
+				<span>
+					<a href="#" class="reset" on-click="resetOption('outlineColor')" title="Reset to default">&times;</a>
+					Outline color
+				</span>
+				<input type="color" value="{{outlineColorHex}}">
 			</label>
 		{{/if}}
 	</div>
