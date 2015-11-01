@@ -14,6 +14,7 @@
     "babel-core": "^5.8.25",
     "gh-pages": "^0.4.0",
     "git-config": "0.0.7",
+    "glob": "^5.0.15",
     "gulp": "github:gulpjs/gulp#4.0",
     "gulp-concat": "^2.6.0",
     "gulp-rename": "^1.2.2",
