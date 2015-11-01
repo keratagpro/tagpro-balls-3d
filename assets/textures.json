@@ -7,17 +7,17 @@
 	{
 		"name": "smiley",
 		"tag": "materials",
-		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/smiley.png"
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/smiley.jpg"
 	},
 	{
 		"name": "wood-2",
 		"tag": "materials",
-		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/wood-2.png"
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/wood-2.jpg"
 	},
 	{
 		"name": "wood",
 		"tag": "materials",
-		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/wood.png"
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/materials/wood.jpg"
 	},
 	{
 		"name": "earth",
@@ -147,7 +147,7 @@
 	{
 		"name": "bowling-ball",
 		"tag": "sports",
-		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/bowling-ball.png"
+		"path": "http://keratagpro.github.io/tagpro-balls-3d/textures/sports/bowling-ball.jpg"
 	},
 	{
 		"name": "golf-ball",
