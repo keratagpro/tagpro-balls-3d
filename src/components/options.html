@@ -27,142 +27,160 @@
 
 		<label class="options-3d-label">
 			Red textures
-			<input type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />
+			<input id="texturesRed" type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />
 		</label>
 
 		<label class="options-3d-label">
 			Blue textures
-			<input type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />
+			<input id="texturesBlue" type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />
 		</label>
+
+		<div class="options-3d-label">
+			Presets
+			<button on-click="preset('default')">Mars vs. Earth</button>
+			<button on-click="preset('planets')">Planets</button>
+			<button on-click="preset('pool')">Pool</button>
+			<button on-click="preset('basketvsbeach')">Basket vs. Beach</button>
+		</div>
 
 		<label class="options-3d-label">
 			<input type="checkbox" checked="{{showAdvanced}}">
-			Advanced options
+			Show advanced options
 		</label>
 
 		{{#if showAdvanced}}
-			<label class="options-3d-label {{isChanged('useCorsProxy') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('useCorsProxy')" title="Reset to default">&times;</a>
-					Enable custom textures
-				</span>
-				<input type="checkbox" checked="{{useCorsProxy}}">
-				<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>
-			</label>
+			<fieldset>
+				<legend>Misc options</legend>
 
-			<label class="options-3d-label {{isChanged('textureSelection') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('textureSelection')" title="Reset to default">&times;</a>
-					Texture selection
-				</span>
-				<select value="{{textureSelection}}">
-					<option value="default">in order</option>
-					<option value="random">random</option>
-					<option value="singleRandom">random per team</option>
-				</select>
-			</label>
-
-			<label class="options-3d-label {{isChanged('velocityCoefficient') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('velocityCoefficient')" title="Reset to default">&times;</a>
-					Velocity coefficient
-				</span>
-				<input type="range" min="0" max="0.2" step="0.01" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
-			</label>
-
-			<label class="options-3d-label {{isChanged('rotationCoefficient') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('rotationCoefficient')" title="Reset to default">&times;</a>
-					Rotation coefficient
+				<label class="options-3d-label {{isChanged('useCorsProxy') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('useCorsProxy')" title="Reset to default">&times;</a>
+						Enable custom textures
 					</span>
-				<input type="range" min="0" max="0.02" step="0.001" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
-			</label>
-
-			<label class="options-3d-label {{isChanged('ambientLightColor') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('ambientLightColor')" title="Reset to default">&times;</a>
-					Ambient light color
-				</span>
-				<input type="color" value="{{ambientLightColorHex}}">
-			</label>
-
-			<label class="options-3d-label {{isChanged('lightColor') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('lightColor')" title="Reset to default">&times;</a>
-					Directional light color
-				</span>
-				<input type="color" value="{{lightColorHex}}">
-			</label>
-
-			<label class="options-3d-label {{isChanged('lightPosition') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('lightPosition')" title="Reset to default">&times;</a>
-					Directional light position
-				</span>
-				x <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">
-				y <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">
-				z <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">
-			</label>
-
-			<label class="options-3d-label {{isChanged('lightIntensity') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('lightIntensity')" title="Reset to default">&times;</a>
-					Directional light intensity
-				</span>
-				<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}
-			</label>
-
-			<div class="options-3d-label {{isChanged('useMaxAnisotropy') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('useMaxAnisotropy')" title="Reset to default">&times;</a>
-					Texture.anisotropy
-				</span>
-				<label>
-					<input type="radio" name="{{useMaxAnisotropy}}" value="{{true}}" checked> Max
+					<input type="checkbox" checked="{{useCorsProxy}}">
+					<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>
 				</label>
-				<label>
-					<input type="radio" name="{{useMaxAnisotropy}}" value="{{false}}"> Custom
+
+				<label class="options-3d-label {{isChanged('disableForEvents') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('disableForEvents')" title="Reset to default">&times;</a>
+						Disable for special events
+					</span>
+					<input type="checkbox" checked="{{disableForEvents}}">
 				</label>
-				{{#if !useMaxAnisotropy}}
-					<input type="range" min="1" max="16" value="{{customAnisotropy}}"> {{customAnisotropy}}
-				{{/if}}
-			</div>
 
-			<label class="options-3d-label {{isChanged('minFilter') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('minFilter')" title="Reset to default">&times;</a>
-					Texture.minFilter
-				</span>
-				<select value="{{minFilter}}">
-					{{#each textureFilters}}
-						<option value="{{value}}">{{label}}</option>
-					{{/each}}
-				</select>
-			</label>
+				<label class="options-3d-label {{isChanged('textureSelection') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('textureSelection')" title="Reset to default">&times;</a>
+						Texture order
+					</span>
+					<select value="{{textureSelection}}">
+						<option value="default">sequential</option>
+						<option value="random">random</option>
+						<option value="singleRandom">random (one per team)</option>
+					</select>
+				</label>
 
-			<label class="options-3d-label {{isChanged('disableForEvents') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('disableForEvents')" title="Reset to default">&times;</a>
-					Disable for special events
-				</span>
-				<input type="checkbox" checked="{{disableForEvents}}">
-			</label>
+				<label class="options-3d-label {{isChanged('velocityCoefficient') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('velocityCoefficient')" title="Reset to default">&times;</a>
+						Velocity coefficient
+					</span>
+					<input type="range" min="0" max="0.2" step="0.01" value="{{velocityCoefficient}}"> {{velocityCoefficient}}
 
-			<label class="options-3d-label {{isChanged('drawOutline') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('drawOutline')" title="Reset to default">&times;</a>
-					Draw outlines
-				</span>
-				<input type="checkbox" checked="{{drawOutline}}">
-			</label>
+				</label>
 
-			<label class="options-3d-label {{isChanged('outlineColor') ? 'changed' : ''}}">
-				<span>
-					<a href="#" class="reset" on-click="resetOption('outlineColor')" title="Reset to default">&times;</a>
-					Outline color
-				</span>
-				<input type="color" value="{{outlineColorHex}}">
-			</label>
+				<label class="options-3d-label {{isChanged('rotationCoefficient') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('rotationCoefficient')" title="Reset to default">&times;</a>
+						Rotation coefficient
+						</span>
+					<input type="range" min="0" max="0.03" step="0.001" value="{{rotationCoefficient}}"> {{rotationCoefficient}}
+				</label>
+			</fieldset>
+
+			<fieldset>
+				<legend>3D options</legend>
+
+				<label class="options-3d-label {{isChanged('drawOutline') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('drawOutline')" title="Reset to default">&times;</a>
+						Draw outlines
+					</span>
+					<input type="checkbox" checked="{{drawOutline}}">
+					<small class="options-3d-muted">(Draw borders around balls)</small>
+				</label>
+
+				<label class="options-3d-label {{isChanged('outlineColor') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('outlineColor')" title="Reset to default">&times;</a>
+						Outline color
+					</span>
+					<input type="color" value="{{outlineColorHex}}">
+				</label>
+
+				<label class="options-3d-label {{isChanged('ambientLightColor') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('ambientLightColor')" title="Reset to default">&times;</a>
+						Ambient light color
+					</span>
+					<input type="color" value="{{ambientLightColorHex}}">
+				</label>
+
+				<label class="options-3d-label {{isChanged('lightColor') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('lightColor')" title="Reset to default">&times;</a>
+						Directional light color
+					</span>
+					<input type="color" value="{{lightColorHex}}">
+				</label>
+
+				<label class="options-3d-label {{isChanged('lightPosition') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('lightPosition')" title="Reset to default">&times;</a>
+						Directional light position
+					</span>
+					x <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">
+					y <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">
+					z <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">
+				</label>
+
+				<label class="options-3d-label {{isChanged('lightIntensity') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('lightIntensity')" title="Reset to default">&times;</a>
+						Directional light intensity
+					</span>
+					<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}
+				</label>
+
+				<div class="options-3d-label {{isChanged('useMaxAnisotropy') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('useMaxAnisotropy')" title="Reset to default">&times;</a>
+						Texture.anisotropy
+					</span>
+					<label>
+						<input type="radio" name="{{useMaxAnisotropy}}" value="{{true}}" checked> Max
+					</label>
+					<label>
+						<input type="radio" name="{{useMaxAnisotropy}}" value="{{false}}"> Custom
+					</label>
+					{{#if !useMaxAnisotropy}}
+						<input type="range" min="1" max="16" value="{{customAnisotropy}}"> {{customAnisotropy}}
+					{{/if}}
+				</div>
+
+				<label class="options-3d-label {{isChanged('minFilter') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('minFilter')" title="Reset to default">&times;</a>
+						Texture.minFilter
+					</span>
+					<select value="{{minFilter}}">
+						{{#each textureFilters}}
+							<option value="{{value}}">{{label}}</option>
+						{{/each}}
+					</select>
+				</label>
+			</fieldset>
 		{{/if}}
 	</div>
 	{{/with}}

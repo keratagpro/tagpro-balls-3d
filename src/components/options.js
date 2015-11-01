@@ -30,11 +30,73 @@ export default Ractive.extend({
 		materialShadings: [
 			{ label: 'Flat', value: THREE.FlatShading },
 			{ label: 'Smooth', value: THREE.SmoothShading }
-		]
+		],
 	},
 	resetOption: function(option) {
 		this.set('options.' + option, defaults[option]);
 		this.event.original.preventDefault();
+	},
+	preset: function(preset) {
+		var red = this.find('#texturesRed').selectize;
+		var blue = this.find('#texturesBlue').selectize;
+
+		if (preset === 'default') {
+			red.setValue(this.getTexturesByName([
+				'mars'
+			]));
+
+			blue.setValue(this.getTexturesByName([
+				'earth'
+			]));
+		}
+		else if (preset === 'planets') {
+			red.setValue(this.getTexturesByName([
+				'mars',
+				'jupiter',
+				'venus',
+				'mercury'
+			]));
+
+			blue.setValue(this.getTexturesByName([
+				'earth',
+				'neptune',
+				'pluto',
+				'moon'
+			]));
+		}
+		else if (preset === 'pool') {
+			red.setValue(this.getTexturesByName([
+				'ball-01',
+				'ball-02',
+				'ball-03',
+				'ball-04',
+				'ball-05',
+				'ball-06'
+			]));
+
+			blue.setValue(this.getTexturesByName([
+				'ball-09',
+				'ball-10',
+				'ball-11',
+				'ball-12',
+				'ball-13',
+				'ball-14'
+			]));	
+		}
+		else if (preset === 'basketvsbeach') {
+			red.setValue(this.getTexturesByName([
+				'basket-ball'
+			]));
+
+			blue.setValue(this.getTexturesByName([
+				'beach-ball'
+			]));
+		}
+	},
+	getTexturesByName: function(names) {
+		return this.get('textures')
+			.filter(texture => names.includes(texture.name))
+			.map(texture => texture.path);
 	},
 	template: `OPTIONS_HTML`,
 	css: `OPTIONS_CSS`,
@@ -109,6 +171,7 @@ export default Ractive.extend({
 	},
 	onrender: function() {
 		$.getJSON(TEXTURES_URL).done(textures => {
+			this.set('textures', textures);
 			createSelectizes(textures, this);
 		});
 	},
