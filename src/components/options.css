@@ -88,39 +88,39 @@
 	overflow: auto;
 }
 
-	.options-3d-content > label {
-		padding: 5px;
-		display: block;
-	}
-
-		.options-3d-content > label > span > .reset {
-			display: none;
-		}
-
-		.options-3d-content > label.changed > span > .reset {
-			display: block;
-			float: left;
-			text-decoration: none;
-			color: #aaa;
-		}
-
-		.options-3d-content > label > span {
-			display: inline-block;
-			width: 180px;
-			text-align: right;
-			padding: 5px 10px;
-		}
-
-		.options-3d-content > label.changed > span {
-			font-style: italic;
-		}
-
-	.options-3d-content > label > input {
-		vertical-align: middle;
-	}
-
 	.options-3d-content a {
 		color: black;
+	}
+
+.options-3d-label {
+	padding: 5px;
+	display: block;
+}
+
+	.options-3d-label > span > .reset {
+		display: none;
+	}
+
+	.options-3d-label.changed > span > .reset {
+		display: block;
+		float: left;
+		text-decoration: none;
+		color: #aaa;
+	}
+
+	.options-3d-label > span {
+		display: inline-block;
+		width: 180px;
+		text-align: right;
+		padding: 5px 10px;
+	}
+
+	.options-3d-label.changed > span {
+		font-style: italic;
+	}
+
+	.options-3d-label > input {
+		vertical-align: middle;
 	}
 
 .options-3d .texture {

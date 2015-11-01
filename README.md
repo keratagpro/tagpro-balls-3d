@@ -18,11 +18,11 @@ Replaces ball textures with a live 3D texture using [three.js](http://threejs.or
 
 ![demo](example/options.jpg)
 
-*Mars vs Earth*
+*Mars vs Earth* (video)
 
 [![demo](example/screenshot.jpg)](https://youtu.be/qz5qbVOoMjM)
 
-*Basket ball vs Beach ball*
+*Basket ball vs Beach ball* (video)
  
 [![demo](example/screenshot2.jpg)](https://youtu.be/RZZtSZZUixg)
 

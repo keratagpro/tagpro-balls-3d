@@ -36,6 +36,11 @@ export default class TextureCanvas {
 			antialias: true
 		});
 
+		this.maxAnisotropy = this.renderer.getMaxAnisotropy();
+
+		this.loader = new THREE.TextureLoader();
+		this.loader.setCrossOrigin('');
+
 		this.renderer.setSize(this.width, this.height);
 
 		var container = document.createElement('div');
@@ -56,7 +61,8 @@ export default class TextureCanvas {
 
 	addPlayer(player) {
 		var texturePath = this.getTexturePathForPlayer(player);
-		ThreeUtils.loadTextureAsync(texturePath, texture => {
+
+		this.loadTexture(texturePath, texture => {
 			var sphere = ThreeUtils.createSphereMesh({ texture });
 
 			ThreeUtils.rotateZ(sphere, Math.PI);
@@ -89,10 +95,25 @@ export default class TextureCanvas {
 		this.updateBinPacking();
 	}
 
+	loadTexture(texturePath, callback) {
+		this.loader.load(texturePath, (texture) => {
+			if (this.config.useMaxAnisotropy) {
+				texture.anisotropy = this.maxAnisotropy;
+			}
+			else {
+				texture.anisotropy = this.customAnisotropy;
+			}
+
+			texture.minFilter = this.config.minFilter;
+
+			callback(texture);
+		});
+	}
+
 	addMarsBall(object, position) {
 		var texturePath = this.config.textureMarsBall;
 
-		ThreeUtils.loadTextureAsync(texturePath, texture => {
+		this.loadTexture(texturePath, texture => {
 			var sphere = ThreeUtils.createSphereMesh({
 				texture,
 				radius: tagpro.TILE_SIZE - 2
@@ -149,7 +170,7 @@ export default class TextureCanvas {
 		}
 		else {
 			var texturePath = this.getTexturePathForPlayer(player);
-			ThreeUtils.loadTextureAsync(texturePath, texture => {
+			this.loadTexture(texturePath, texture => {
 				var material = meta.sphere.material;
 				material.map = texture;
 				material.needsUpdate = true;

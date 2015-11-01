@@ -3,9 +3,6 @@ import THREE from 'three';
 
 import config from './config';
 
-var loader = new THREE.TextureLoader();
-loader.setCrossOrigin('');
-
 // var rotWorldMatrix;
 var quaternion = new THREE.Quaternion();
 
@@ -56,16 +53,6 @@ export function createSphereMesh(options) {
 	}
 
 	return mesh;
-}
-
-export function loadTextureAsync(texturePath, callback) {
-	loader.load(texturePath, function(texture) {
-		// console.log('loaded texture', texturePath);
-		texture.anisotropy = config.anisotropy;
-		texture.minFilter = config.minFilter;
-
-		callback(texture);
-	});
 }
 
 export function createCamera(options) {

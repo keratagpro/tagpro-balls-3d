@@ -36,7 +36,13 @@ export default Ractive.extend({
 		}
 
 		loader.load(texture, texture => {
-			texture.anisotropy = this.get('options.anisotropy');
+			if (this.get('options.useMaxAnisotropy')) {
+				texture.anisotropy = renderer.getMaxAnisotropy();
+			}
+			else {
+				texture.anisotropy = this.get('options.customAnisotropy');
+			}
+			
 			texture.minFilter = this.get('options.minFilter');
 			texture.needsUpdate = true;
 
