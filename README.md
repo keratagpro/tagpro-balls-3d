@@ -4,6 +4,8 @@
 
 Replaces ball textures with a live 3D texture using [three.js](http://threejs.org/).
 
+![animation](example/animation.gif)
+
 ## Installation
 
 1. Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en)
