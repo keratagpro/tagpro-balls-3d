@@ -343,7 +343,7 @@ tagpro.ready(function() {
 
 			this.baseTexture = new PIXI.BaseTexture(this.renderer.domElement);
 
-			this.tilePadding = 15;
+			this.tilePadding = 10;
 
 			this.textureIndexRed = 0;
 			this.textureIndexBlue = 0;
