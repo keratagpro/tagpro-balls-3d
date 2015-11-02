@@ -27,7 +27,9 @@ export var defaults = {
 	corsProxy: 'https://crossorigin.me/',
 	disableForEvents: true,
 	drawOutline: false,
-	outlineColor: 0x000000
+	outlineColor: 0x000000,
+	outlineColorRed: 0xff0000,
+	outlineColorBlue: 0x0000ff
 };
 
 export default $.extend(true, {}, defaults, Storage.all());

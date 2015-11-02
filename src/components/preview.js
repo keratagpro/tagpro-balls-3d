@@ -6,7 +6,8 @@ import * as ThreeUtils from '../lib/three_utils';
 export default Ractive.extend({
 	template: '<canvas class="options-3d-preview-ball"></canvas>',
 	data: {
-		size: tagpro.TILE_SIZE
+		size: tagpro.TILE_SIZE,
+		team: 1 // 1 - red, 2 - blue
 	},
 	onrender: function() {
 		var width = this.get('size');
@@ -74,7 +75,9 @@ export default Ractive.extend({
 
 			if (this.get('options.drawOutline')) {
 				var outlineMaterial = new THREE.MeshBasicMaterial({
-					color: this.get('options.outlineColor'),
+					color: this.get('team') === 1 ?
+						this.get('options.outlineColorRed') :
+						this.get('options.outlineColorBlue'),
 					side: THREE.FrontSide
 				});
 

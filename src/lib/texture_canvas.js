@@ -61,9 +61,15 @@ export default class TextureCanvas {
 
 	addPlayer(player) {
 		var texturePath = this.getTexturePathForPlayer(player);
+		var color = player.team === 1 ?
+			this.config.outlineColorRed:
+			this.config.outlineColorBlue;
 
 		this.loadTexture(texturePath, texture => {
-			var sphere = ThreeUtils.createSphereMesh({ texture });
+			var sphere = ThreeUtils.createSphereMesh({
+				texture,
+				outlineColor: color
+			});
 
 			ThreeUtils.rotateZ(sphere, Math.PI);
 
