@@ -136,15 +136,26 @@ export default Ractive.extend({
 				this.set('options.lightColor', color.getHex());
 			}
 		},
-		outlineColorHex: {
+		outlineColorRedHex: {
 			get: function() {
-				var val = this.get('options.outlineColor');
+				var val = this.get('options.outlineColorRed');
 				var color = new THREE.Color(val);
 				return '#' + color.getHexString();
 			},
 			set: function(val) {
 				var color = new THREE.Color(val);
-				this.set('options.outlineColor', color.getHex());
+				this.set('options.outlineColorRed', color.getHex());
+			}
+		},
+		outlineColorBlueHex: {
+			get: function() {
+				var val = this.get('options.outlineColorBlue');
+				var color = new THREE.Color(val);
+				return '#' + color.getHexString();
+			},
+			set: function(val) {
+				var color = new THREE.Color(val);
+				this.set('options.outlineColorBlue', color.getHex());
 			}
 		}
 	},

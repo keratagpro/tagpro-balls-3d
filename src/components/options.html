@@ -111,12 +111,20 @@
 					<small class="options-3d-muted">(Draw borders around balls)</small>
 				</label>
 
-				<label class="options-3d-label {{isChanged('outlineColor') ? 'changed' : ''}}">
+				<label class="options-3d-label {{isChanged('outlineColorRed') ? 'changed' : ''}}">
 					<span>
-						<a href="#" class="reset" on-click="resetOption('outlineColor')" title="Reset to default">&times;</a>
-						Outline color
+						<a href="#" class="reset" on-click="resetOption('outlineColorRed')" title="Reset to default">&times;</a>
+						Red outline color
 					</span>
-					<input type="color" value="{{outlineColorHex}}">
+					<input type="color" value="{{outlineColorRedHex}}">
+				</label>
+
+				<label class="options-3d-label {{isChanged('outlineColorBlue') ? 'changed' : ''}}">
+					<span>
+						<a href="#" class="reset" on-click="resetOption('outlineColorBlue')" title="Reset to default">&times;</a>
+						Blue outline color
+					</span>
+					<input type="color" value="{{outlineColorBlueHex}}">
 				</label>
 
 				<label class="options-3d-label {{isChanged('ambientLightColor') ? 'changed' : ''}}">
