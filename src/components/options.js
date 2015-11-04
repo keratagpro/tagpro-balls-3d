@@ -12,11 +12,16 @@ const TEXTURES_URL = 'http://keratagpro.github.io/tagpro-balls-3d/textures.json'
 export default Ractive.extend({
 	data: {
 		showAdvanced: false,
-		isChanged: function(option) {
-			var val = this.get('options.' + option);
-			var def = defaults[option];
+		isChanged: function(...options) {
+			for (var i = 0; i < options.length; i++) {
+				let val = this.get('options.' + options[i]);
+				let def = defaults[options[i]];
 
-			return val.toString() !== def.toString();
+				if (val.toString() !== def.toString()) {
+					return true;
+				}
+			}
+			return false;
 		},
 		options: config,
 		textureFilters: [
@@ -32,8 +37,8 @@ export default Ractive.extend({
 			{ label: 'Smooth', value: THREE.SmoothShading }
 		],
 	},
-	resetOption: function(option) {
-		this.set('options.' + option, defaults[option]);
+	resetOption: function(...options) {
+		options.forEach(option => this.set('options.' + option, defaults[option]));
 		this.event.original.preventDefault();
 	},
 	preset: function(preset) {
@@ -136,6 +141,17 @@ export default Ractive.extend({
 				this.set('options.lightColor', color.getHex());
 			}
 		},
+		outlineColorHex: {
+			get: function() {
+				var val = this.get('options.outlineColor');
+				var color = new THREE.Color(val);
+				return '#' + color.getHexString();
+			},
+			set: function(val) {
+				var color = new THREE.Color(val);
+				this.set('options.outlineColor', color.getHex());
+			}
+		},
 		outlineColorRedHex: {
 			get: function() {
 				var val = this.get('options.outlineColorRed');
@@ -176,7 +192,7 @@ export default Ractive.extend({
 			this.set('options', $.extend(true, {}, defaults));
 
 			$('input.texture-select').each(function() {
-				this.selectize.setValue(this.value, true);
+				this.selectize.setValue(this.value.split(','), true);
 			});
 		});
 	},

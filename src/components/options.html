@@ -105,27 +105,30 @@
 				<label class="options-3d-label {{isChanged('drawOutline') ? 'changed' : ''}}">
 					<span>
 						<a href="#" class="reset" on-click="resetOption('drawOutline')" title="Reset to default">&times;</a>
-						Draw outlines
+						Draw ball outlines
 					</span>
 					<input type="checkbox" checked="{{drawOutline}}">
 					<small class="options-3d-muted">(Draw borders around balls)</small>
 				</label>
 
-				<label class="options-3d-label {{isChanged('outlineColorRed') ? 'changed' : ''}}">
+				<div class="options-3d-label {{isChanged('outlineColor', 'outlineColorRed', 'outlineColorBlue') ? 'changed' : ''}}">
 					<span>
-						<a href="#" class="reset" on-click="resetOption('outlineColorRed')" title="Reset to default">&times;</a>
-						Red outline color
+						<a href="#" class="reset" on-click="resetOption('outlineColor', 'outlineColorRed', 'outlineColorBlue')" title="Reset to default">&times;</a>
+						Ball outline colors
 					</span>
-					<input type="color" value="{{outlineColorRedHex}}">
-				</label>
-
-				<label class="options-3d-label {{isChanged('outlineColorBlue') ? 'changed' : ''}}">
-					<span>
-						<a href="#" class="reset" on-click="resetOption('outlineColorBlue')" title="Reset to default">&times;</a>
-						Blue outline color
-					</span>
-					<input type="color" value="{{outlineColorBlueHex}}">
-				</label>
+					<label>
+						Red
+						<input type="color" value="{{outlineColorRedHex}}">
+					</label>
+					<label>
+						Blue
+						<input type="color" value="{{outlineColorBlueHex}}">
+					</label>
+					<label>
+						Mars
+						<input type="color" value="{{outlineColorHex}}">
+					</label>
+				</div>
 
 				<label class="options-3d-label {{isChanged('ambientLightColor') ? 'changed' : ''}}">
 					<span>

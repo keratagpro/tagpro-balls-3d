@@ -3,12 +3,26 @@ import THREE from 'three';
 
 import Storage from './storage';
 
-const rootUrl = 'https://keratagpro.github.io/tagpro-balls-3d';
+const templateUrl = 'https://keratagpro.github.io/tagpro-balls-3d/textures';
+
+var defaultRed = [
+	`${templateUrl}/planets/mars.jpg`,
+	`${templateUrl}/planets/jupiter.jpg`,
+	`${templateUrl}/planets/venus.jpg`,
+	`${templateUrl}/planets/mercury.jpg`
+];
+
+var defaultBlue = [
+	`${templateUrl}/planets/earth.jpg`,
+	`${templateUrl}/planets/neptune.jpg`,
+	`${templateUrl}/planets/pluto.jpg`,
+	`${templateUrl}/planets/moon.jpg`
+];
 
 export var defaults = {
-	texturesRed: [`${rootUrl}/textures/planets/mars.jpg`],
-	texturesBlue: [`${rootUrl}/textures/planets/earth.jpg`],
-	textureMarsBall: `${rootUrl}/textures/planets/mars.jpg`,
+	texturesRed: defaultRed,
+	texturesBlue: defaultBlue,
+	textureMarsBall: `${templateUrl}/planets/mars.jpg`,
 	textureSelection: 'default',
 	velocityCoefficient: 0.1,
 	rotationCoefficient: 0.015,
