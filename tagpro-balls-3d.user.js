@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name          TagPro Balls 3D
 // @description   Replaces ball sprites with rotating 3D ball sprites using THREE.js.
-// @version       0.4.9
+// @version       0.4.10
 // @author        Kera
 // @grant         GM_addStyle
 // @grant         GM_getValue
@@ -115,16 +115,12 @@ tagpro.ready(function() {
 		return Storage;
 	})();
 
-	var templateUrl = 'https://keratagpro.github.io/tagpro-balls-3d/textures';
-
-	var defaultRed = [templateUrl + '/planets/mars.jpg', templateUrl + '/planets/jupiter.jpg', templateUrl + '/planets/venus.jpg', templateUrl + '/planets/mercury.jpg'];
-
-	var defaultBlue = [templateUrl + '/planets/earth.jpg', templateUrl + '/planets/neptune.jpg', templateUrl + '/planets/pluto.jpg', templateUrl + '/planets/moon.jpg'];
+	var rootUrl = 'https://keratagpro.github.io/tagpro-balls-3d';
 
 	var defaults = {
-		texturesRed: defaultRed,
-		texturesBlue: defaultBlue,
-		textureMarsBall: templateUrl + '/planets/mars.jpg',
+		texturesRed: [rootUrl + '/textures/planets/mars.jpg'],
+		texturesBlue: [rootUrl + '/textures/planets/earth.jpg'],
+		textureMarsBall: rootUrl + '/textures/planets/mars.jpg',
 		textureSelection: 'default',
 		velocityCoefficient: 0.1,
 		rotationCoefficient: 0.015,
@@ -143,9 +139,7 @@ tagpro.ready(function() {
 		corsProxy: 'https://crossorigin.me/',
 		disableForEvents: true,
 		drawOutline: false,
-		outlineColor: 0x000000,
-		outlineColorRed: 0xff0000,
-		outlineColorBlue: 0x0000ff
+		outlineColor: 0x000000
 	};
 
 	var config = $.extend(true, {}, defaults, Storage.all());
@@ -396,13 +390,9 @@ tagpro.ready(function() {
 				var _this = this;
 
 				var texturePath = this.getTexturePathForPlayer(player);
-				var color = player.team === 1 ? this.config.outlineColorRed : this.config.outlineColorBlue;
 
 				this.loadTexture(texturePath, function (texture) {
-					var sphere = createSphereMesh({
-						texture: texture,
-						outlineColor: color
-					});
+					var sphere = createSphereMesh({ texture: texture });
 
 					rotateZ(sphere, Math.PI);
 
@@ -791,8 +781,7 @@ tagpro.ready(function() {
 	var Preview = Ractive.extend({
 		template: '<canvas class="options-3d-preview-ball"></canvas>',
 		data: {
-			size: tagpro.TILE_SIZE,
-			team: 1 // 1 - red, 2 - blue
+			size: tagpro.TILE_SIZE
 		},
 		onrender: function onrender() {
 			var _this = this;
@@ -857,7 +846,7 @@ tagpro.ready(function() {
 
 				if (_this.get('options.drawOutline')) {
 					var outlineMaterial = new THREE.MeshBasicMaterial({
-						color: _this.get('team') === 1 ? _this.get('options.outlineColorRed') : _this.get('options.outlineColorBlue'),
+						color: _this.get('options.outlineColor'),
 						side: THREE.FrontSide
 					});
 
@@ -890,35 +879,18 @@ tagpro.ready(function() {
 	var Options = Ractive.extend({
 		data: {
 			showAdvanced: false,
-			isChanged: function isChanged() {
-				for (var _len = arguments.length, options = Array(_len), _key = 0; _key < _len; _key++) {
-					options[_key] = arguments[_key];
-				}
+			isChanged: function isChanged(option) {
+				var val = this.get('options.' + option);
+				var def = defaults[option];
 
-				for (var i = 0; i < options.length; i++) {
-					var val = this.get('options.' + options[i]);
-					var def = defaults[options[i]];
-
-					if (val.toString() !== def.toString()) {
-						return true;
-					}
-				}
-				return false;
+				return val.toString() !== def.toString();
 			},
 			options: config,
 			textureFilters: [{ label: 'Nearest', value: THREE.NearestFilter }, { label: 'NearestMipMapNearest', value: THREE.NearestMipMapNearestFilter }, { label: 'NearestMipMapLinear', value: THREE.NearestMipMapLinearFilter }, { label: 'Linear', value: THREE.LinearFilter }, { label: 'LinearMipMapNearest', value: THREE.LinearMipMapNearestFilter }, { label: 'LinearMipMapLinear', value: THREE.LinearMipMapLinearFilter }],
 			materialShadings: [{ label: 'Flat', value: THREE.FlatShading }, { label: 'Smooth', value: THREE.SmoothShading }]
 		},
-		resetOption: function resetOption() {
-			var _this = this;
-
-			for (var _len2 = arguments.length, options = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-				options[_key2] = arguments[_key2];
-			}
-
-			options.forEach(function (option) {
-				return _this.set('options.' + option, defaults[option]);
-			});
+		resetOption: function resetOption(option) {
+			this.set('options.' + option, defaults[option]);
 			this.event.original.preventDefault();
 		},
 		preset: function preset(_preset) {
@@ -950,7 +922,7 @@ tagpro.ready(function() {
 				return texture.path;
 			});
 		},
-		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-label options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-label options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" team="2" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label class="options-3d-label">\n\t\t\tRed textures\n\t\t\t<input id="texturesRed" type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label class="options-3d-label">\n\t\t\tBlue textures\n\t\t\t<input id="texturesBlue" type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<div class="options-3d-label">\n\t\t\tPresets\n\t\t\t<button on-click="preset(\'default\')">Mars vs. Earth</button>\n\t\t\t<button on-click="preset(\'planets\')">Planets</button>\n\t\t\t<button on-click="preset(\'pool\')">Pool</button>\n\t\t\t<button on-click="preset(\'basketvsbeach\')">Basket vs. Beach</button>\n\t\t</div>\n\n\t\t<label class="options-3d-label">\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tShow advanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<fieldset>\n\t\t\t\t<legend>Misc options</legend>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'useCorsProxy\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'useCorsProxy\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tEnable custom textures\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="checkbox" checked="{{useCorsProxy}}">\n\t\t\t\t\t<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'disableForEvents\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'disableForEvents\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDisable for special events\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="checkbox" checked="{{disableForEvents}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'textureSelection\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'textureSelection\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tTexture order\n\t\t\t\t\t</span>\n\t\t\t\t\t<select value="{{textureSelection}}">\n\t\t\t\t\t\t<option value="default">sequential</option>\n\t\t\t\t\t\t<option value="random">random</option>\n\t\t\t\t\t\t<option value="singleRandom">random (one per team)</option>\n\t\t\t\t\t</select>\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'velocityCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'velocityCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tVelocity coefficient\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="range" min="0" max="0.2" step="0.01" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'rotationCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'rotationCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tRotation coefficient\n\t\t\t\t\t\t</span>\n\t\t\t\t\t<input type="range" min="0" max="0.03" step="0.001" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t\t</label>\n\t\t\t</fieldset>\n\n\t\t\t<fieldset>\n\t\t\t\t<legend>3D options</legend>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'drawOutline\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'drawOutline\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDraw ball outlines\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="checkbox" checked="{{drawOutline}}">\n\t\t\t\t\t<small class="options-3d-muted">(Draw borders around balls)</small>\n\t\t\t\t</label>\n\n\t\t\t\t<div class="options-3d-label {{isChanged(\'outlineColor\', \'outlineColorRed\', \'outlineColorBlue\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'outlineColor\', \'outlineColorRed\', \'outlineColorBlue\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tBall outline colors\n\t\t\t\t\t</span>\n\t\t\t\t\t<label>\n\t\t\t\t\t\tRed\n\t\t\t\t\t\t<input type="color" value="{{outlineColorRedHex}}">\n\t\t\t\t\t</label>\n\t\t\t\t\t<label>\n\t\t\t\t\t\tBlue\n\t\t\t\t\t\t<input type="color" value="{{outlineColorBlueHex}}">\n\t\t\t\t\t</label>\n\t\t\t\t\t<label>\n\t\t\t\t\t\tMars\n\t\t\t\t\t\t<input type="color" value="{{outlineColorHex}}">\n\t\t\t\t\t</label>\n\t\t\t\t</div>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'ambientLightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'ambientLightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tAmbient light color\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'lightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDirectional light color\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'lightPosition\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightPosition\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDirectional light position\n\t\t\t\t\t</span>\n\t\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'lightIntensity\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightIntensity\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDirectional light intensity\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t\t</label>\n\n\t\t\t\t<div class="options-3d-label {{isChanged(\'useMaxAnisotropy\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'useMaxAnisotropy\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tTexture.anisotropy\n\t\t\t\t\t</span>\n\t\t\t\t\t<label>\n\t\t\t\t\t\t<input type="radio" name="{{useMaxAnisotropy}}" value="{{true}}" checked> Max\n\t\t\t\t\t</label>\n\t\t\t\t\t<label>\n\t\t\t\t\t\t<input type="radio" name="{{useMaxAnisotropy}}" value="{{false}}"> Custom\n\t\t\t\t\t</label>\n\t\t\t\t\t{{#if !useMaxAnisotropy}}\n\t\t\t\t\t\t<input type="range" min="1" max="16" value="{{customAnisotropy}}"> {{customAnisotropy}}\n\t\t\t\t\t{{/if}}\n\t\t\t\t</div>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'minFilter\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'minFilter\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tTexture.minFilter\n\t\t\t\t\t</span>\n\t\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t\t{{/each}}\n\t\t\t\t\t</select>\n\t\t\t\t</label>\n\t\t\t</fieldset>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
+		template: '<div class="options-3d">\n\t<div class="options-3d-header">\n\t\t<a href="#" class="close" on-click="close">&times;</a>\n\t\t<div class="actions">\n\t\t\t<button class="reset" on-click="reset-options">Reset</button>\n\t\t</div>\n\t\t<h1>\n\t\t\t<span class="text-3d">Balls 3D</span> Settings\n\t\t</h1>\n\t</div>\n\n\t{{#with options}}\n\t<div class="options-3d-content">\n\t\t<div class="options-3d-preview">\n\t\t\t<label class="options-3d-label options-3d-preview-red">\n\t\t\t\t{{#each options.texturesRed}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\n\t\t\t<label class="options-3d-label options-3d-preview-blue">\n\t\t\t\t{{#each options.texturesBlue}}\n\t\t\t\t\t<Preview texture="{{.}}" />\n\t\t\t\t{{/each}}\n\t\t\t</label>\n\t\t</div>\n\n\t\t<label class="options-3d-label">\n\t\t\tRed textures\n\t\t\t<input id="texturesRed" type="text" name="red-textures" class="texture-select" value="{{redTexturesString}}" />\n\t\t</label>\n\n\t\t<label class="options-3d-label">\n\t\t\tBlue textures\n\t\t\t<input id="texturesBlue" type="text" name="blue-textures" class="texture-select" value="{{blueTexturesString}}" />\n\t\t</label>\n\n\t\t<div class="options-3d-label">\n\t\t\tPresets\n\t\t\t<button on-click="preset(\'default\')">Mars vs. Earth</button>\n\t\t\t<button on-click="preset(\'planets\')">Planets</button>\n\t\t\t<button on-click="preset(\'pool\')">Pool</button>\n\t\t\t<button on-click="preset(\'basketvsbeach\')">Basket vs. Beach</button>\n\t\t</div>\n\n\t\t<label class="options-3d-label">\n\t\t\t<input type="checkbox" checked="{{showAdvanced}}">\n\t\t\tShow advanced options\n\t\t</label>\n\n\t\t{{#if showAdvanced}}\n\t\t\t<fieldset>\n\t\t\t\t<legend>Misc options</legend>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'useCorsProxy\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'useCorsProxy\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tEnable custom textures\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="checkbox" checked="{{useCorsProxy}}">\n\t\t\t\t\t<small class="options-3d-muted">(Proxy all textures through crossorigin.me)</small>\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'disableForEvents\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'disableForEvents\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDisable for special events\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="checkbox" checked="{{disableForEvents}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'textureSelection\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'textureSelection\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tTexture order\n\t\t\t\t\t</span>\n\t\t\t\t\t<select value="{{textureSelection}}">\n\t\t\t\t\t\t<option value="default">sequential</option>\n\t\t\t\t\t\t<option value="random">random</option>\n\t\t\t\t\t\t<option value="singleRandom">random (one per team)</option>\n\t\t\t\t\t</select>\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'velocityCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'velocityCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tVelocity coefficient\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="range" min="0" max="0.2" step="0.01" value="{{velocityCoefficient}}"> {{velocityCoefficient}}\n\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'rotationCoefficient\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'rotationCoefficient\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tRotation coefficient\n\t\t\t\t\t\t</span>\n\t\t\t\t\t<input type="range" min="0" max="0.03" step="0.001" value="{{rotationCoefficient}}"> {{rotationCoefficient}}\n\t\t\t\t</label>\n\t\t\t</fieldset>\n\n\t\t\t<fieldset>\n\t\t\t\t<legend>3D options</legend>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'drawOutline\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'drawOutline\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDraw outlines\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="checkbox" checked="{{drawOutline}}">\n\t\t\t\t\t<small class="options-3d-muted">(Draw borders around balls)</small>\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'outlineColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'outlineColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tOutline color\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="color" value="{{outlineColorHex}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'ambientLightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'ambientLightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tAmbient light color\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="color" value="{{ambientLightColorHex}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'lightColor\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightColor\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDirectional light color\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="color" value="{{lightColorHex}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'lightPosition\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightPosition\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDirectional light position\n\t\t\t\t\t</span>\n\t\t\t\t\tx <input type="number" min="-1000" max="1000" value="{{lightPosition.0}}">\n\t\t\t\t\ty <input type="number" min="-1000" max="1000" value="{{lightPosition.1}}">\n\t\t\t\t\tz <input type="number" min="-1000" max="1000" value="{{lightPosition.2}}">\n\t\t\t\t</label>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'lightIntensity\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'lightIntensity\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tDirectional light intensity\n\t\t\t\t\t</span>\n\t\t\t\t\t<input type="range" min="0" max="2" step="0.1" value="{{lightIntensity}}"> {{lightIntensity}}\n\t\t\t\t</label>\n\n\t\t\t\t<div class="options-3d-label {{isChanged(\'useMaxAnisotropy\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'useMaxAnisotropy\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tTexture.anisotropy\n\t\t\t\t\t</span>\n\t\t\t\t\t<label>\n\t\t\t\t\t\t<input type="radio" name="{{useMaxAnisotropy}}" value="{{true}}" checked> Max\n\t\t\t\t\t</label>\n\t\t\t\t\t<label>\n\t\t\t\t\t\t<input type="radio" name="{{useMaxAnisotropy}}" value="{{false}}"> Custom\n\t\t\t\t\t</label>\n\t\t\t\t\t{{#if !useMaxAnisotropy}}\n\t\t\t\t\t\t<input type="range" min="1" max="16" value="{{customAnisotropy}}"> {{customAnisotropy}}\n\t\t\t\t\t{{/if}}\n\t\t\t\t</div>\n\n\t\t\t\t<label class="options-3d-label {{isChanged(\'minFilter\') ? \'changed\' : \'\'}}">\n\t\t\t\t\t<span>\n\t\t\t\t\t\t<a href="#" class="reset" on-click="resetOption(\'minFilter\')" title="Reset to default">&times;</a>\n\t\t\t\t\t\tTexture.minFilter\n\t\t\t\t\t</span>\n\t\t\t\t\t<select value="{{minFilter}}">\n\t\t\t\t\t\t{{#each textureFilters}}\n\t\t\t\t\t\t\t<option value="{{value}}">{{label}}</option>\n\t\t\t\t\t\t{{/each}}\n\t\t\t\t\t</select>\n\t\t\t\t</label>\n\t\t\t</fieldset>\n\t\t{{/if}}\n\t</div>\n\t{{/with}}\n</div>\n',
 		css: '.options-3d-preview {\n\tdisplay: flex;\n}\n\n.options-3d-muted {\n\tcolor: #aaa;\n}\n\n.options-3d-preview-red,\n.options-3d-preview-blue {\n\tflex: 1;\n\ttext-align: center;\n\tpadding: 3px;\n}\n\n.options-3d-preview-red {\n\tbackground-color: rgba(255, 0, 0, 0.2);\n}\n\n.options-3d-preview-blue {\n\tbackground-color: rgba(0, 0, 255, 0.2);\n}\n\n.options-3d-preview-ball {\n\tvertical-align: middle;\n}\n\n.options-3d {\n\tmargin: 10px auto;\n\twidth: 570px;\n\tbackground-color: #eee;\n\tcolor: #000;\n\tborder-radius: 5px;\n\tborder: 2px solid #333;\n}\n\n\t.options-3d-header {\n\t\tborder-bottom: 1px solid #333;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-header .actions {\n\t\tfloat: right;\n\t\tpadding: 5px;\n\t\tmargin-right: 15px;\n\t}\n\n\t.options-3d-header .text-3d {\n\t\tposition: relative;\n\t\ttop: -3px;\n\t\tleft: -3px;\n\t}\n\n\t.options-3d-header .close {\n\t\tfloat: right;\n\t\ttext-decoration: none;\n\t\tcolor: #333;\n\t\tline-height: 20px;\n\t\tfont-size: 20px;\n\t\tpadding: 5px;\n\t}\n\n\t.options-3d h1,\n\t.options-3d h2,\n\t.options-3d h3 {\n\t\ttext-align: left;\n\t\tmargin: 0;\n\t\tpadding: 0;\n\n\t\t/* override tagpro styles */\n\t\tbackground: none;\n\t\twidth: auto;\n\t\theight: auto;\n\t}\n\n\t.options-3d h1 { font-size: 26px; }\n\t.options-3d h2 { font-size: 14px; }\n\t.options-3d h3 { font-size: 12px; }\n\n\t.options-3d h1 > span,\n\t.options-3d h2 > span,\n\t.options-3d h3 > span {\n\t\tdisplay: inline;\n\t}\n\n.options-3d-content {\n\tpadding: 5px 10px;\n\toverflow: auto;\n}\n\n\t.options-3d-content a {\n\t\tcolor: black;\n\t}\n\n.options-3d-label {\n\tpadding: 5px;\n\tdisplay: block;\n}\n\n\t.options-3d-label > span > .reset {\n\t\tdisplay: none;\n\t}\n\n\t.options-3d-label.changed > span > .reset {\n\t\tdisplay: block;\n\t\tfloat: left;\n\t\ttext-decoration: none;\n\t\tcolor: #aaa;\n\t}\n\n\t.options-3d-label > span {\n\t\tdisplay: inline-block;\n\t\twidth: 180px;\n\t\ttext-align: right;\n\t\tpadding: 5px 10px;\n\t}\n\n\t.options-3d-label.changed > span {\n\t\tfont-style: italic;\n\t}\n\n\t.options-3d-label > input {\n\t\tvertical-align: middle;\n\t}\n\n.options-3d .texture {\n\tdisplay: inline-block;\n\twidth: 100px;\n\theight: 100px;\n\tmargin: 5px;\n}\n\n.options-3d .texture img {\n\twidth: 100%;\n\theight: 100%;\n}\n\n.options-3d .texture-input {\n\twidth: 100%;\n\tbox-sizing: border-box;\n}\n\n.option-thumbnail {\n\tposition: relative;\n\twidth: 50px;\n\theight: 50px;\n\toverflow: hidden;\n\tdisplay: inline-block;\n\tvertical-align: middle;\n\tmargin-right: 5px;\n}\n\n\t.option-thumbnail img {\n\t\tposition: absolute;\n\t\tleft: 50%;\n\t\ttop: 50%;\n\t\theight: 100%;\n\t\twidth: auto;\n\t\ttransform: translate(-50%, -50%);\n\t}\n\n.option-item-image {\n\twidth: 20px;\n\theight: 20px;\n\tvertical-align: middle;\n\tpadding-right: 5px;\n}\n\n.selectize-control {\n\tposition: static;\n}\n\n.selectize-dropdown [data-selectable] {\n\twhite-space: nowrap;\n\t/*display: inline-block;*/\n}',
 		noCssTransform: true,
 		computed: {
@@ -1002,28 +974,6 @@ tagpro.ready(function() {
 					var color = new THREE.Color(val);
 					this.set('options.outlineColor', color.getHex());
 				}
-			},
-			outlineColorRedHex: {
-				get: function get() {
-					var val = this.get('options.outlineColorRed');
-					var color = new THREE.Color(val);
-					return '#' + color.getHexString();
-				},
-				set: function set(val) {
-					var color = new THREE.Color(val);
-					this.set('options.outlineColorRed', color.getHex());
-				}
-			},
-			outlineColorBlueHex: {
-				get: function get() {
-					var val = this.get('options.outlineColorBlue');
-					var color = new THREE.Color(val);
-					return '#' + color.getHexString();
-				},
-				set: function set(val) {
-					var color = new THREE.Color(val);
-					this.set('options.outlineColorBlue', color.getHex());
-				}
 			}
 		},
 		oninit: function oninit() {
@@ -1042,16 +992,16 @@ tagpro.ready(function() {
 				this.set('options', $.extend(true, {}, defaults));
 
 				$('input.texture-select').each(function () {
-					this.selectize.setValue(this.value.split(','), true);
+					this.selectize.setValue(this.value, true);
 				});
 			});
 		},
 		onrender: function onrender() {
-			var _this2 = this;
+			var _this = this;
 
 			$.getJSON(TEXTURES_URL).done(function (textures) {
-				_this2.set('textures', textures);
-				createSelectizes(textures, _this2);
+				_this.set('textures', textures);
+				createSelectizes(textures, _this);
 			});
 		},
 		components: {
